@@ -7,8 +7,10 @@ import (
 
 // Topic from forum
 type Topic struct {
-	href string
-	text string
+	href    string
+	text    string
+	year    string
+	quality string
 }
 
 //func parseString(text string, array []string) (string, string) {
@@ -29,8 +31,7 @@ type Topic struct {
 
 // ParseForumTree get topics from forumTree
 func ParseForumTree(body []byte) ([]Topic, error) {
-	//	var reTopic = regexp.MustCompile(`<a href="(viewtopic.php\?t=\d+)"class="topictitle">(.+?)\s\((\d{4})\)\s(.+?)\s\[(.+?)\]</a>`)
-	var reTopic = regexp.MustCompile(`<a href="(viewtopic.php\?t=\d+)"class="topictitle">(.+?\(\d{4}\).+?)</a>`)
+	var reTopic = regexp.MustCompile(`<a href="(viewtopic.php\?t=\d+)"class="topictitle">(.+?)\s\((\d{4})\)\s(.+?)</a>`)
 	var topics []Topic
 	if reTopic.Match(body) == false {
 		return topics, fmt.Errorf("No topic in body")
@@ -41,6 +42,8 @@ func ParseForumTree(body []byte) ([]Topic, error) {
 		var t Topic
 		t.href = string(findResult[v][1])
 		t.text = string(findResult[v][2])
+		t.year = string(findResult[v][3])
+		t.quality = string(findResult[v][4])
 		topics = append(topics, t)
 	}
 	return topics, nil
