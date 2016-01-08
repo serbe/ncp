@@ -3,6 +3,7 @@ package nnmc
 import (
 	"fmt"
 	"regexp"
+	"strconv"
 )
 
 // Topic from forum
@@ -67,16 +68,16 @@ type Film struct {
 }
 
 // ParseForumTree get topics from forumTree
-func ParseForumTree(body []byte) ([]RawTopic, error) {
+func ParseForumTree(body []byte) ([]Topic, error) {
 	var reTree = regexp.MustCompile(`<a href="(viewtopic.php\?t=\d+)"class="topictitle">(.+?)\s\((\d{4})\)\s(.+?)</a>`)
-	var topics []RawTopic
+	var topics []Topic
 	if reTree.Match(body) == false {
 		return topics, fmt.Errorf("No topic in body")
 	}
 	findResult := reTree.FindAllSubmatch(body, -1)
 
 	for _, v := range findResult {
-		var t RawTopic
+		var t Topic
 		t.href = string(v[1])
 		t.text = string(v[2])
 		t.year = string(v[3])
@@ -86,49 +87,78 @@ func ParseForumTree(body []byte) ([]RawTopic, error) {
 	return topics, nil
 }
 
+// ParseTopic get film from topic
 func ParseTopic(body []byte) (Film, error) {
+	body = replaceAll(body, "&nbsp;", " ")
 	var film Film
 	var reTopic = regexp.MustCompile(`<span style="font-weight: bold">(Производство|Жанр|Режиссер|Продюсер|Актеры|Описание|Возраст|Дата мировой премьеры|Дата премьеры в России|Продолжительность|Качество видео|Перевод|Вид субтитров|Видео|Аудио):<\/span>(.+?)<br \/>`)
+	var reTr = regexp.MustCompile(`(?s)<tr\sclass="row1">(.+?)</tr>`)
+	var reTd = regexp.MustCompile(`(?s)<td\sclass="genmed">(.+?)</td>`)
 	if reTopic.Match(body) == false {
 		return film, fmt.Errorf("No topic in body")
 	}
-	findResult := reTopic.FindAllSubmatch(body, -1)
-	for _, v := range findResult {
-		switch v[1] {
+	findAttrs := reTopic.FindAllSubmatch(body, -1)
+	for _, v := range findAttrs {
+		one := string(v[1])
+		two := string(v[2])
+		switch one {
 		case "Производство":
-			film.Country = v[2]
+			film.Country = two
 		case "Жанр":
-			film.Genre = v[2]
+			film.Genre = two
 		case "Режиссер":
-			film.Director = v[2]
+			film.Director = two
 		case "Продюсер":
-			film.Producer = v[2]
+			film.Producer = two
 		case "Актеры":
-			film.Actors = v[2]
+			film.Actors = two
 		case "Описание":
-			film.Description = v[2]
+			film.Description = two
 		case "Возраст":
-			film.Age = v[2]
+			film.Age = two
 		case "Дата мировой премьеры":
-			film.ReleaseDate = v[2]
+			film.ReleaseDate = two
 		case "Дата премьеры в России":
-			film.RussianDate = v[2]
+			film.RussianDate = two
 		case "Продолжительность":
-			film.Duration = v[2]
+			if i64, err := strconv.ParseInt(two, 10, 64); err == nil {
+				film.Duration = i64
+			}
 		case "Качество видео":
-			film.Quality = v[2]
+			film.Quality = two
 		case "Перевод":
-			film.Translation = v[2]
+			film.Translation = two
 		case "Вид субтитров":
-			film.Subtitles = v[2]
+			film.Subtitles = two
 		case "Видео":
-			film.Video = v[2]
+			film.Video = two
 		case "Аудио":
-			film.Audio = v[2]
+			film.Audio = two
 		}
 
 	}
+
+	if reTr.Match(body) == false {
+		return film, fmt.Errorf("No <tr> in body")
+	}
+	findTr := reTr.FindAllSubmatch(body, -1)
+	for _, tr := range findTr {
+		if reTd.Match(tr[1]) == false {
+			findTd := reTd.FindAllSubmatch(body, -1)
+			fmt.Println(len(findTd))
+			for _, v := range findTd {
+				fmt.Println(string(v[1]))
+			}
+		}
+	}
+
 	return film, nil
+}
+
+func replaceAll(body []byte, from string, to string) []byte {
+	var reStr = regexp.MustCompile(from)
+	result := reStr.ReplaceAll(body, []byte(to))
+	return result
 }
 
 //func parseString(text string, array []string) (string, string) {
