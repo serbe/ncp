@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"regexp"
 	"strconv"
+	"strings"
 )
 
 // Topic from forum
@@ -59,8 +60,9 @@ type Film struct {
 	Audio       string
 	Kinopoisk   float64
 	Imdb        float64
+	NNM         float64
 	Sound       string
-	Size        string
+	Size        int64
 	DateCreate  string
 	Torrent     string
 	Poster      string
@@ -90,17 +92,19 @@ func ParseForumTree(body []byte) ([]Topic, error) {
 // ParseTopic get film from topic
 func ParseTopic(body []byte) (Film, error) {
 	body = replaceAll(body, "&nbsp;", " ")
-	var film Film
-	var reTopic = regexp.MustCompile(`<span style="font-weight: bold">(Производство|Жанр|Режиссер|Продюсер|Актеры|Описание|Возраст|Дата мировой премьеры|Дата премьеры в России|Продолжительность|Качество видео|Перевод|Вид субтитров|Видео|Аудио):<\/span>(.+?)<br \/>`)
-	var reTr = regexp.MustCompile(`(?s)<tr\sclass="row1">(.+?)</tr>`)
-	var reTd = regexp.MustCompile(`(?s)<td\sclass="genmed">(.+?)</td>`)
+	var (
+		film    Film
+		reTopic = regexp.MustCompile(`<span style="font-weight: bold">(Производство|Жанр|Режиссер|Продюсер|Актеры|Описание|Возраст|Дата мировой премьеры|Дата премьеры в России|Продолжительность|Качество видео|Перевод|Вид субтитров|Видео|Аудио):<\/span>(.+?)<`)
+		reTd    = regexp.MustCompile(`(?s)<tr class="row1">.+?<td class="genmed">.+?(Зарегистрирован|Размер|Рейтинг).+?<\/td>.+?<td class="genmed">.+?(\d{1,2},\d{1,2} GB|\d{3,4} MB|\d,\d|\d{1,2} .{3} \d{4}).+?</td>.+?</tr>`)
+		reDl    = regexp.MustCompile(`<a href="download\.php\?id=(\d{5,7})" rel="nofollow">Скачать<`)
+	)
 	if reTopic.Match(body) == false {
 		return film, fmt.Errorf("No topic in body")
 	}
 	findAttrs := reTopic.FindAllSubmatch(body, -1)
 	for _, v := range findAttrs {
-		one := string(v[1])
-		two := string(v[2])
+		one := strings.Trim(string(v[1]), " ")
+		two := strings.Trim(string(v[2]), " ")
 		switch one {
 		case "Производство":
 			film.Country = two
@@ -135,23 +139,36 @@ func ParseTopic(body []byte) (Film, error) {
 		case "Аудио":
 			film.Audio = two
 		}
-
 	}
-
-	if reTr.Match(body) == false {
-		return film, fmt.Errorf("No <tr> in body")
+	if reTd.Match(body) == false {
+		return film, fmt.Errorf("No <td> in body")
 	}
-	findTr := reTr.FindAllSubmatch(body, -1)
-	for _, tr := range findTr {
-		if reTd.Match(tr[1]) == false {
-			findTd := reTd.FindAllSubmatch(body, -1)
-			fmt.Println(len(findTd))
-			for _, v := range findTd {
-				fmt.Println(string(v[1]))
+	findTd := reTd.FindAllSubmatch(body, -1)
+	if len(findTd) == 3 {
+		film.DateCreate = string(findTd[0][2])
+		size := string(findTd[1][2])
+		size = strings.Replace(size, ",", ".", -1)
+		fmt.Println(size)
+		if s64, err := strconv.ParseInt(size, 10, 64); err == nil {
+			if s64 < 80 {
+				s64 = s64 * 1000
 			}
+			film.Size = s64
+			fmt.Println(s64)
+		}
+		rating := string(findTd[2][2])
+		rating = strings.Replace(size, ",", ".", -1)
+		fmt.Println(rating)
+		if r64, err := strconv.ParseFloat(rating, 64); err == nil {
+			film.NNM = r64
+			fmt.Println(r64)
 		}
 	}
-
+	if reDl.Match(body) == false {
+		return film, fmt.Errorf("No torrent url in body")
+	}
+	findDl := reDl.FindAllSubmatch(body, -1)
+	film.Torrent = "http://nnm-club.me/forum/download.php?id=" + string(findDl[0][1])
 	return film, nil
 }
 
