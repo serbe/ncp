@@ -71,8 +71,10 @@ type Film struct {
 
 // ParseForumTree get topics from forumTree
 func (n *NNMc) ParseForumTree(url string) ([]Topic, error) {
-	var reTree = regexp.MustCompile(`<a href="(viewtopic.php\?t=\d+)"class="topictitle">(.+?)\s\((\d{4})\)\s(.+?)</a>`)
-	var topics []Topic
+	var (
+		topics []Topic
+		reTree = regexp.MustCompile(`<a href="(viewtopic.php\?t=\d+)"class="topictitle">(.+?)\s\((\d{4})\)\s(.+?)</a>`)
+	)
 	body, err := getHTML(url, n)
 	if err != nil {
 		return topics, err
@@ -81,7 +83,6 @@ func (n *NNMc) ParseForumTree(url string) ([]Topic, error) {
 		return topics, fmt.Errorf("No topic in body")
 	}
 	findResult := reTree.FindAllSubmatch(body, -1)
-
 	for _, v := range findResult {
 		var t Topic
 		t.href = string(v[1])
@@ -90,6 +91,7 @@ func (n *NNMc) ParseForumTree(url string) ([]Topic, error) {
 		t.quality = string(v[4])
 		topics = append(topics, t)
 	}
+
 	return topics, nil
 }
 
@@ -104,6 +106,7 @@ func (n *NNMc) ParseTopic(url string) (Film, error) {
 		reDl     = regexp.MustCompile(`<a href="download\.php\?id=(\d{5,7})" rel="nofollow">Скачать<`)
 	)
 	body, err := getHTML(url, n)
+	film.Href = url
 	if err != nil {
 		return film, err
 	}
@@ -184,19 +187,3 @@ func replaceAll(body []byte, from string, to string) []byte {
 	result := reStr.ReplaceAll(body, []byte(to))
 	return result
 }
-
-//func parseString(text string, array []string) (string, string) {
-//	result := ""
-//	for _, value := range array {
-//		index := strings.Index(strings.ToLower(strings.Replace(text, "ё", "е", -1)), strings.ToLower(value))
-//		if index != -1 {
-//			if result == "" {
-//				result = value
-//			} else {
-//				result += ", " + value
-//			}
-//			text = text[0:index] + text[index+len(value):]
-//		}
-//	}
-//	return text, result
-//}
