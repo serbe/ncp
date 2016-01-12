@@ -36,43 +36,47 @@ type Topic struct {
 // Subtitles   Вид субтитров
 // Video       Видео
 // Audio       Аудио
-
 type Film struct {
-	ID          int64
-	Name        string
-	EngName     string
-	Href        string
-	Year        int64
-	Genre       string
-	Country     string
-	Director    string
-	Producer    string
-	Actors      string
-	Description string
-	Age         string
-	ReleaseDate string
-	RussianDate string
-	Duration    int64
-	Quality     string
-	Translation string
-	Subtitles   string
-	Video       string
-	Audio       string
-	Kinopoisk   float64
-	Imdb        float64
-	NNM         float64
-	Sound       string
-	Size        int64
-	DateCreate  string
-	Torrent     string
-	Poster      string
-	Hide        bool
+	ID            int64
+	Name          string
+	EngName       string
+	Href          string
+	Year          int64
+	Genre         string
+	Country       string
+	Director      string
+	Producer      string
+	Actors        string
+	Description   string
+	Age           string
+	ReleaseDate   string
+	RussianDate   string
+	Duration      int64
+	Quality       string
+	Translation   string
+	SubtitlesType string
+	Subtitles     string
+	Video         string
+	Audio         string
+	Kinopoisk     float64
+	Imdb          float64
+	NNM           float64
+	Sound         string
+	Size          int64
+	DateCreate    string
+	Torrent       string
+	Poster        string
+	Hide          bool
 }
 
 // ParseForumTree get topics from forumTree
-func ParseForumTree(body []byte) ([]Topic, error) {
+func (n *NNMc) ParseForumTree(url string) ([]Topic, error) {
 	var reTree = regexp.MustCompile(`<a href="(viewtopic.php\?t=\d+)"class="topictitle">(.+?)\s\((\d{4})\)\s(.+?)</a>`)
 	var topics []Topic
+	body, err := getHTML(url, n)
+	if err != nil {
+		return topics, err
+	}
 	if reTree.Match(body) == false {
 		return topics, fmt.Errorf("No topic in body")
 	}
@@ -90,14 +94,19 @@ func ParseForumTree(body []byte) ([]Topic, error) {
 }
 
 // ParseTopic get film from topic
-func ParseTopic(body []byte) (Film, error) {
-	body = replaceAll(body, "&nbsp;", " ")
+func (n *NNMc) ParseTopic(url string) (Film, error) {
 	var (
-		film    Film
-		reTopic = regexp.MustCompile(`<span style="font-weight: bold">(Производство|Жанр|Режиссер|Продюсер|Актеры|Описание|Возраст|Дата мировой премьеры|Дата премьеры в России|Продолжительность|Качество видео|Перевод|Вид субтитров|Видео|Аудио):<\/span>(.+?)<`)
-		reTd    = regexp.MustCompile(`(?s)<tr class="row1">.+?<td class="genmed">.+?(Зарегистрирован|Размер|Рейтинг).+?<\/td>.+?<td class="genmed">.+?(\d{1,2},\d{1,2} GB|\d{3,4} MB|\d,\d|\d{1,2} .{3} \d{4}).+?</td>.+?</tr>`)
-		reDl    = regexp.MustCompile(`<a href="download\.php\?id=(\d{5,7})" rel="nofollow">Скачать<`)
+		film     Film
+		reTopic  = regexp.MustCompile(`<span style="font-weight: bold">(Производство|Жанр|Режиссер|Продюсер|Актеры|Описание|Возраст|Дата мировой премьеры|Дата премьеры в России|Продолжительность|Качество видео|Перевод|Вид субтитров|Субтитры|Видео|Аудио):<\/span>(.+?)<`)
+		reDate   = regexp.MustCompile(`> (\d{1,2} .{3} \d{4}).{9}<`)
+		reSize   = regexp.MustCompile(`Размер блока: \d{1,2} MB"> (\d{1,2},\d{1,2}|\d{3,4})`)
+		reRating = regexp.MustCompile(`>(\d,\d)<\/span`)
+		reDl     = regexp.MustCompile(`<a href="download\.php\?id=(\d{5,7})" rel="nofollow">Скачать<`)
 	)
+	body, err := getHTML(url, n)
+	if err != nil {
+		return film, err
+	}
 	if reTopic.Match(body) == false {
 		return film, fmt.Errorf("No topic in body")
 	}
@@ -133,6 +142,8 @@ func ParseTopic(body []byte) (Film, error) {
 		case "Перевод":
 			film.Translation = two
 		case "Вид субтитров":
+			film.SubtitlesType = two
+		case "Субтитры":
 			film.Subtitles = two
 		case "Видео":
 			film.Video = two
@@ -140,28 +151,24 @@ func ParseTopic(body []byte) (Film, error) {
 			film.Audio = two
 		}
 	}
-	if reTd.Match(body) == false {
-		return film, fmt.Errorf("No <td> in body")
+	if reDate.Match(body) == true {
+		film.DateCreate = string(reDate.FindSubmatch(body)[1])
 	}
-	findTd := reTd.FindAllSubmatch(body, -1)
-	if len(findTd) == 3 {
-		film.DateCreate = string(findTd[0][2])
-		size := string(findTd[1][2])
+	if reSize.Match(body) == true {
+		size := string(reSize.FindSubmatch(body)[1])
 		size = strings.Replace(size, ",", ".", -1)
-		fmt.Println(size)
-		if s64, err := strconv.ParseInt(size, 10, 64); err == nil {
-			if s64 < 80 {
+		if s64, err := strconv.ParseFloat(size, 64); err == nil {
+			if s64 < 100 {
 				s64 = s64 * 1000
 			}
-			film.Size = s64
-			fmt.Println(s64)
+			film.Size = int64(s64)
 		}
-		rating := string(findTd[2][2])
-		rating = strings.Replace(size, ",", ".", -1)
-		fmt.Println(rating)
+	}
+	if reRating.Match(body) == true {
+		rating := string(reRating.FindSubmatch(body)[1])
+		rating = strings.Replace(rating, ",", ".", -1)
 		if r64, err := strconv.ParseFloat(rating, 64); err == nil {
 			film.NNM = r64
-			fmt.Println(r64)
 		}
 	}
 	if reDl.Match(body) == false {
