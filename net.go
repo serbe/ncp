@@ -36,8 +36,8 @@ func Init(login string, password string) (*NNMc, error) {
 	return &NNMc{client: client}, err
 }
 
-// GetHTML get body from url
-func (n *NNMc) GetHTML(url string) ([]byte, error) {
+// getHTML get body from url
+func getHTML(url string, n *NNMc) ([]byte, error) {
 	resp, err := n.client.Get(url)
 	if err != nil {
 		log.Println("client Get error:", err)
@@ -53,5 +53,7 @@ func (n *NNMc) GetHTML(url string) ([]byte, error) {
 	if err != nil {
 		log.Println("ioutil.ReadAll error:", err)
 	}
+	doc = replaceAll(doc, "&nbsp;", " ")
+	doc = replaceAll(doc, "&amp;", "&")
 	return doc, nil
 }
