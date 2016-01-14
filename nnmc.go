@@ -30,26 +30,36 @@ type Topic struct {
 }
 
 // Film all values
-// ID          id
-// Name        Название
-// EngName     Английское название
-// Href        Ссылка
-// Year        Год
-// Genre       Жанр
-// Country     Производство
-// Director    Режиссер
-// Producer    Продюсер
-// Actors      Актеры
-// Description Описание
-// Age         Возраст
-// ReleaseDate Дата мировой премьеры
-// RussianDate Дата премьеры в России
-// Duration    Продолжительность
-// Quality     Качество видео
-// Translation Перевод
-// Subtitles   Вид субтитров
-// Video       Видео
-// Audio       Аудио
+// ID            id
+// Name          Название
+// EngName       Английское название
+// Href          Ссылка
+// Year          Год
+// Genre         Жанр
+// Country       Производство
+// Director      Режиссер
+// Producer      Продюсер
+// Actors        Актеры
+// Description   Описание
+// Age           Возраст
+// ReleaseDate   Дата мировой премьеры
+// RussianDate   Дата премьеры в России
+// Duration      Продолжительность
+// Quality       Качество видео
+// Translation   Перевод
+// SubtitlesType Вид субтитров
+// Subtitles     Субтитры
+// Video         Видео
+// Audio         Аудио
+// Kinopoisk     Рейтинг кинопоиска
+// Imdb          Рейтинг IMDb
+// NNM           Рейтинг nnm-club
+// Sound         Звук
+// Size          Размер
+// DateCreate    Дата создания раздачи
+// Torrent       Ссылка на torrent
+// Poster        Ссылка на постер
+// Hide          Скрывать в общем списке
 type Film struct {
 	ID            int64
 	Name          string
