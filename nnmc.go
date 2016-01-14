@@ -23,10 +23,10 @@ type NNMc struct {
 
 // Topic from forum
 type Topic struct {
-	href    string
-	text    string
-	year    string
-	quality string
+	Href    string
+	Text    string
+	Year    string
+	Quality string
 }
 
 // Film all values
@@ -61,36 +61,36 @@ type Topic struct {
 // Poster        Ссылка на постер
 // Hide          Скрывать в общем списке
 type Film struct {
-	ID            int64
-	Name          string
-	EngName       string
-	Href          string
-	Year          int64
-	Genre         string
-	Country       string
-	Director      string
-	Producer      string
-	Actors        string
-	Description   string
-	Age           string
-	ReleaseDate   string
-	RussianDate   string
-	Duration      int64
-	Quality       string
-	Translation   string
-	SubtitlesType string
-	Subtitles     string
-	Video         string
-	Audio         string
-	Kinopoisk     float64
-	Imdb          float64
-	NNM           float64
-	Sound         string
-	Size          int64
-	DateCreate    string
-	Torrent       string
-	Poster        string
-	Hide          bool
+	ID            int64   `gorm:"column:id" sql:"AUTO_INCREMENT"`
+	Name          string  `gorm:"column:name"`
+	EngName       string  `gorm:"column:eng_name"`
+	Href          string  `gorm:"column:href"`
+	Year          int64   `gorm:"column:year"`
+	Genre         string  `gorm:"column:genre"`
+	Country       string  `gorm:"column:country"`
+	Director      string  `gorm:"column:director"`
+	Producer      string  `gorm:"column:producer"`
+	Actors        string  `gorm:"column:actors"`
+	Description   string  `gorm:"column:description"`
+	Age           string  `gorm:"column:age"`
+	ReleaseDate   string  `gorm:"column:release_date"`
+	RussianDate   string  `gorm:"column:russian_date"`
+	Duration      int64   `gorm:"column:duration"`
+	Quality       string  `gorm:"column:quality"`
+	Translation   string  `gorm:"column:translation"`
+	SubtitlesType string  `gorm:"column:subtitles_type"`
+	Subtitles     string  `gorm:"column:subtitles"`
+	Video         string  `gorm:"column:video"`
+	Audio         string  `gorm:"column:audio"`
+	Kinopoisk     float64 `gorm:"column:kinopoisk"`
+	IMDb          float64 `gorm:"column:imdb"`
+	NNM           float64 `gorm:"column:nnm"`
+	Sound         string  `gorm:"column:sound"`
+	Size          int64   `gorm:"column:size"`
+	DateCreate    string  `gorm:"column:date_create"`
+	Torrent       string  `gorm:"column:torrent"`
+	Poster        string  `gorm:"column:poster"`
+	Hide          bool    `gorm:"column:hide" sql:"default:0"`
 }
 
 // Init nnmc with login password
@@ -149,10 +149,10 @@ func (n *NNMc) ParseForumTree(url string) ([]Topic, error) {
 	findResult := reTree.FindAllSubmatch(body, -1)
 	for _, v := range findResult {
 		var t Topic
-		t.href = string(v[1])
-		t.text = string(v[2])
-		t.year = string(v[3])
-		t.quality = string(v[4])
+		t.Href = "http://nnm-club.me/forum/" + string(v[1])
+		t.Text = string(v[2])
+		t.Year = string(v[3])
+		t.Quality = string(v[4])
 		topics = append(topics, t)
 	}
 
@@ -185,7 +185,7 @@ func (n *NNMc) ParseTopic(url string) (Film, error) {
 		case "Производство":
 			film.Country = two
 		case "Жанр":
-			film.Genre = two
+			film.Genre = strings.ToLower(two)
 		case "Режиссер":
 			film.Director = two
 		case "Продюсер":
