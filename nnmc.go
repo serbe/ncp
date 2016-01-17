@@ -24,7 +24,7 @@ type NNMc struct {
 // Topic from forum
 type Topic struct {
 	Href    string
-	Text    string
+	Name    string
 	Year    string
 	Quality string
 }
@@ -150,7 +150,7 @@ func (n *NNMc) ParseForumTree(url string) ([]Topic, error) {
 	for _, v := range findResult {
 		var t Topic
 		t.Href = "http://nnm-club.me/forum/" + string(v[1])
-		t.Text = string(v[2])
+		t.Name = string(v[2])
 		t.Year = string(v[3])
 		t.Quality = string(v[4])
 		topics = append(topics, t)
@@ -160,17 +160,31 @@ func (n *NNMc) ParseForumTree(url string) ([]Topic, error) {
 }
 
 // ParseTopic get film from topic
-func (n *NNMc) ParseTopic(url string) (Film, error) {
+func (n *NNMc) ParseTopic(topic Topic) (Film, error) {
 	var (
 		film     Film
-		reTopic  = regexp.MustCompile(`<span style="font-weight: bold">(Производство|Жанр|Режиссер|Продюсер|Актеры|Описание|Возраст|Дата мировой премьеры|Дата премьеры в России|Продолжительность|Качество видео|Перевод|Вид субтитров|Субтитры|Видео|Аудио):<\/span>(.+?)<`)
+		reTopic  = regexp.MustCompile(`<span style="font-weight: bold">(Производство|Жанр|Режиссер|Продюсер|Актеры|Описание|Возраст|Дата мировой премьеры|Дата премьеры в России|Дата Российской премьеры|Дата российской премьеры|Продолжительность|Качество видео|Качество|Перевод|Вид субтитров|Субтитры|Видео|Аудио):<\/span>(.+?)<`)
 		reDate   = regexp.MustCompile(`> (\d{1,2} .{3} \d{4}).{9}<`)
 		reSize   = regexp.MustCompile(`Размер блока: \d{1,2} MB"> (\d{1,2},\d{1,2}|\d{3,4})`)
 		reRating = regexp.MustCompile(`>(\d,\d)<\/span`)
 		reDl     = regexp.MustCompile(`<a href="download\.php\?id=(\d{5,7})" rel="nofollow">Скачать<`)
 	)
-	body, err := getHTML(url, n)
-	film.Href = url
+	name := strings.Split(topic.Name, "/")
+	switch len(name) {
+	case 1:
+		film.Name = strings.Trim(name[0], " ")
+	case 2:
+		film.Name = strings.Trim(name[0], " ")
+		film.EngName = strings.Trim(name[1], " ")
+	case 3:
+		film.Name = strings.Trim(name[0], " ")
+		film.EngName = strings.Trim(name[1], " ")
+	}
+	film.Href = topic.Href
+	if year64, err := strconv.ParseInt(topic.Year, 10, 64); err == nil {
+		film.Year = year64
+	}
+	body, err := getHTML(film.Href, n)
 	if err != nil {
 		return film, err
 	}
@@ -180,7 +194,8 @@ func (n *NNMc) ParseTopic(url string) (Film, error) {
 	findAttrs := reTopic.FindAllSubmatch(body, -1)
 	for _, v := range findAttrs {
 		one := strings.Trim(string(v[1]), " ")
-		two := strings.Trim(string(v[2]), " ")
+		two := strings.Replace(string(v[2]), "<br />", "", -1)
+		two = strings.Trim(two, " ")
 		switch one {
 		case "Производство":
 			film.Country = two
@@ -198,13 +213,13 @@ func (n *NNMc) ParseTopic(url string) (Film, error) {
 			film.Age = two
 		case "Дата мировой премьеры":
 			film.ReleaseDate = two
-		case "Дата премьеры в России":
+		case "Дата премьеры в России", "Дата российской премьеры", "Дата Российской премьеры":
 			film.RussianDate = two
 		case "Продолжительность":
 			if i64, err := strconv.ParseInt(two, 10, 64); err == nil {
 				film.Duration = i64
 			}
-		case "Качество видео":
+		case "Качество видео", "Качество":
 			film.Quality = two
 		case "Перевод":
 			film.Translation = two
