@@ -166,7 +166,7 @@ func (n *NNMc) ParseTopic(topic Topic) (Film, error) {
 		reTopic  = regexp.MustCompile(`<span style="font-weight: bold">(Производство|Жанр|Режиссер|Продюсер|Актеры|Описание|Возраст|Дата мировой премьеры|Дата премьеры в России|Дата Российской премьеры|Дата российской премьеры|Продолжительность|Качество видео|Качество|Перевод|Вид субтитров|Субтитры|Видео|Аудио):<\/span>(.+?)<`)
 		reDate   = regexp.MustCompile(`> (\d{1,2} .{3} \d{4}).{9}<`)
 		reSize   = regexp.MustCompile(`Размер блока: \d{1,2} MB"> (\d{1,2},\d{1,2}|\d{3,4})`)
-		reRating = regexp.MustCompile(`>(\d,\d)<\/span`)
+		reRating = regexp.MustCompile(`>(\d,\d|\d)<\/span>.+?\(Голосов:`)
 		reDl     = regexp.MustCompile(`<a href="download\.php\?id=(\d{5,7})" rel="nofollow">Скачать<`)
 	)
 	name := strings.Split(topic.Name, "/")
