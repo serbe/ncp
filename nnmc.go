@@ -165,7 +165,7 @@ func (n *NNMc) ParseTopic(topic Topic) (Film, error) {
 		film     Film
 		reTopic  = regexp.MustCompile(`<span style="font-weight: bold">(Производство|Жанр|Режиссер|Продюсер|Актеры|Описание|Возраст|Дата мировой премьеры|Дата премьеры в России|Дата Российской премьеры|Дата российской премьеры|Продолжительность|Качество видео|Качество|Перевод|Вид субтитров|Субтитры|Видео|Аудио):<\/span>(.+?)<`)
 		reDate   = regexp.MustCompile(`> (\d{1,2} .{3} \d{4}).{9}<`)
-		reSize   = regexp.MustCompile(`Размер блока: \d{1,2} MB"> (\d{1,2},\d{1,2}|\d{3,4})`)
+		reSize   = regexp.MustCompile(`Размер блока: \d{1,2} MB"> (\d{1,2},\d{1,2}|\d{3,4}|\d{1,2})\s`)
 		reRating = regexp.MustCompile(`>(\d,\d|\d)<\/span>.+?\(Голосов:`)
 		reDl     = regexp.MustCompile(`<a href="download\.php\?id=(\d{5,7})" rel="nofollow">Скачать<`)
 	)
@@ -234,7 +234,7 @@ func (n *NNMc) ParseTopic(topic Topic) (Film, error) {
 		}
 	}
 	if reDate.Match(body) == true {
-		film.DateCreate = string(reDate.FindSubmatch(body)[1])
+		film.DateCreate = replaceDate(string(reDate.FindSubmatch(body)[1]))
 	}
 	if reSize.Match(body) == true {
 		size := string(reSize.FindSubmatch(body)[1])
@@ -265,4 +265,20 @@ func replaceAll(body []byte, from string, to string) []byte {
 	var reStr = regexp.MustCompile(from)
 	result := reStr.ReplaceAll(body, []byte(to))
 	return result
+}
+
+func replaceDate(s string) string {
+	s = strings.Replace(s, " Янв ", ".01.", -1)
+	s = strings.Replace(s, " Фев ", ".02.", -1)
+	s = strings.Replace(s, " Мар ", ".03.", -1)
+	s = strings.Replace(s, " Апр ", ".04.", -1)
+	s = strings.Replace(s, " Май ", ".05.", -1)
+	s = strings.Replace(s, " Июн ", ".06.", -1)
+	s = strings.Replace(s, " Июл ", ".07.", -1)
+	s = strings.Replace(s, " Авг ", ".08.", -1)
+	s = strings.Replace(s, " Сен ", ".09.", -1)
+	s = strings.Replace(s, " Окт ", ".10.", -1)
+	s = strings.Replace(s, " Ноя ", ".11.", -1)
+	s = strings.Replace(s, " Дек ", ".12.", -1)
+	return s
 }
