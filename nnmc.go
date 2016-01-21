@@ -155,7 +155,6 @@ func (n *NNMc) ParseForumTree(url string) ([]Topic, error) {
 		t.Quality = string(v[4])
 		topics = append(topics, t)
 	}
-
 	return topics, nil
 }
 
