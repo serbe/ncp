@@ -163,11 +163,12 @@ func (n *NNMc) ParseForumTree(url string) ([]Topic, error) {
 func (n *NNMc) ParseTopic(topic Topic) (Film, error) {
 	var (
 		film     Film
-		reTopic  = regexp.MustCompile(`<span style="font-weight: bold">(Производство|Жанр|Режиссер|Продюсер|Актеры|Описание|Возраст|Дата мировой премьеры|Дата премьеры в России|Дата Российской премьеры|Дата российской премьеры|Продолжительность|Качество видео|Качество|Перевод|Вид субтитров|Субтитры|Видео|Аудио):<\/span>(.+?)<`)
+		reTopic  = regexp.MustCompile(`<span style="font-weight: bold">(Производство|Жанр|Режиссер|Продюсер|Актеры|Описание фильма|Описание|Возраст|Дата мировой премьеры|Дата премьеры в России|Дата Российской премьеры|Дата российской премьеры|Продолжительность|Качество видео|Качество|Перевод|Вид субтитров|Субтитры|Видео|Аудио):<\/span>(.+?)<`)
 		reDate   = regexp.MustCompile(`> (\d{1,2} .{3} \d{4}).{9}<`)
 		reSize   = regexp.MustCompile(`Размер блока: \d{1,2} MB"> (\d{1,2},\d{1,2}|\d{3,4}|\d{1,2})\s`)
 		reRating = regexp.MustCompile(`>(\d,\d|\d)<\/span>.+?\(Голосов:`)
 		reDl     = regexp.MustCompile(`<a href="download\.php\?id=(\d{5,7})" rel="nofollow">Скачать<`)
+		reImg    = regexp.MustCompile(`"postImg postImgAligned img-right" title="http:\/\/assets\.nnm-club\.ws\/forum\/image\.php\?link=(.+?jpg)`)
 	)
 	name := strings.Split(topic.Name, "/")
 	switch len(name) {
@@ -207,7 +208,7 @@ func (n *NNMc) ParseTopic(topic Topic) (Film, error) {
 			film.Producer = two
 		case "Актеры":
 			film.Actors = two
-		case "Описание":
+		case "Описание фильма", "Описание":
 			film.Description = two
 		case "Возраст":
 			film.Age = two
@@ -233,6 +234,11 @@ func (n *NNMc) ParseTopic(topic Topic) (Film, error) {
 			film.Audio = two
 		}
 	}
+	if reDl.Match(body) == false {
+		return film, fmt.Errorf("No torrent url in body")
+	}
+	findDl := reDl.FindAllSubmatch(body, -1)
+	film.Torrent = "http://nnm-club.me/forum/download.php?id=" + string(findDl[0][1])
 	if reDate.Match(body) == true {
 		film.DateCreate = replaceDate(string(reDate.FindSubmatch(body)[1]))
 	}
@@ -253,11 +259,9 @@ func (n *NNMc) ParseTopic(topic Topic) (Film, error) {
 			film.NNM = r64
 		}
 	}
-	if reDl.Match(body) == false {
-		return film, fmt.Errorf("No torrent url in body")
+	if reImg.Match(body) == true {
+		film.Poster = string(reImg.FindSubmatch(body)[1])
 	}
-	findDl := reDl.FindAllSubmatch(body, -1)
-	film.Torrent = "http://nnm-club.me/forum/download.php?id=" + string(findDl[0][1])
 	return film, nil
 }
 
