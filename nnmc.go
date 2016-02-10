@@ -169,7 +169,7 @@ func (n *NNMc) ParseTopic(topic Topic) (Film, error) {
 		reDl     = regexp.MustCompile(`<a href="download\.php\?id=(\d{5,7})" rel="nofollow">Скачать<`)
 		reImg    = regexp.MustCompile(`"postImg postImgAligned img-right" title="http:\/\/assets\.nnm-club\.ws\/forum\/image\.php\?link=(.+?jpe{0,1}g)`)
 	)
-	name := strings.Split(topic.Name, "/")
+	name := strings.Split(topic.Name, " / ")
 	switch len(name) {
 	case 1:
 		film.Name = strings.Trim(name[0], " ")
