@@ -61,36 +61,36 @@ type Topic struct {
 // Poster        Ссылка на постер
 // Hide          Скрывать в общем списке
 type Film struct {
-	ID            int64   `gorm:"column:id" sql:"AUTO_INCREMENT"`
-	Name          string  `gorm:"column:name"`
-	EngName       string  `gorm:"column:eng_name"`
-	Href          string  `gorm:"column:href"`
-	Year          int64   `gorm:"column:year"`
-	Genre         string  `gorm:"column:genre"`
-	Country       string  `gorm:"column:country"`
-	Director      string  `gorm:"column:director"`
-	Producer      string  `gorm:"column:producer"`
-	Actors        string  `gorm:"column:actors"`
-	Description   string  `gorm:"column:description"`
-	Age           string  `gorm:"column:age"`
-	ReleaseDate   string  `gorm:"column:release_date"`
-	RussianDate   string  `gorm:"column:russian_date"`
-	Duration      int64   `gorm:"column:duration"`
-	Quality       string  `gorm:"column:quality"`
-	Translation   string  `gorm:"column:translation"`
-	SubtitlesType string  `gorm:"column:subtitles_type"`
-	Subtitles     string  `gorm:"column:subtitles"`
-	Video         string  `gorm:"column:video"`
-	Audio         string  `gorm:"column:audio"`
-	Kinopoisk     float64 `gorm:"column:kinopoisk"`
-	IMDb          float64 `gorm:"column:imdb"`
-	NNM           float64 `gorm:"column:nnm"`
-	Sound         string  `gorm:"column:sound"`
-	Size          int64   `gorm:"column:size"`
-	DateCreate    string  `gorm:"column:date_create"`
-	Torrent       string  `gorm:"column:torrent"`
-	Poster        string  `gorm:"column:poster"`
-	Hide          bool    `gorm:"column:hide" sql:"default:0"`
+	ID            int64   `gorm:"column:id" sql:"AUTO_INCREMENT" db:"id"`
+	Name          string  `gorm:"column:name" db:"name"`
+	EngName       string  `gorm:"column:eng_name" db:"eng_name"`
+	Href          string  `gorm:"column:href" db:"href"`
+	Year          int64   `gorm:"column:year" db:"year"`
+	Genre         string  `gorm:"column:genre" db:"genre"`
+	Country       string  `gorm:"column:country" db:"country"`
+	Director      string  `gorm:"column:director" db:"director"`
+	Producer      string  `gorm:"column:producer" db:"producer"`
+	Actors        string  `gorm:"column:actors" db:"actors"`
+	Description   string  `gorm:"column:description" db:"description"`
+	Age           string  `gorm:"column:age" db:"age"`
+	ReleaseDate   string  `gorm:"column:release_date" db:"release_date"`
+	RussianDate   string  `gorm:"column:russian_date" db:"russian_date"`
+	Duration      int64   `gorm:"column:duration" db:"duration"`
+	Quality       string  `gorm:"column:quality" db:"quality"`
+	Translation   string  `gorm:"column:translation" db:"translation"`
+	SubtitlesType string  `gorm:"column:subtitles_type" db:"subtitles_type"`
+	Subtitles     string  `gorm:"column:subtitles" db:"subtitles"`
+	Video         string  `gorm:"column:video" db:"video"`
+	Audio         string  `gorm:"column:audio" db:"audio"`
+	Kinopoisk     float64 `gorm:"column:kinopoisk" db:"kinopoisk"`
+	IMDb          float64 `gorm:"column:imdb" db:"imdb"`
+	NNM           float64 `gorm:"column:nnm" db:"nnm"`
+	Sound         string  `gorm:"column:sound" db:"sound"`
+	Size          int64   `gorm:"column:size" db:"size"`
+	DateCreate    string  `gorm:"column:date_create" db:"date_create"`
+	Torrent       string  `gorm:"column:torrent" db:"torrent"`
+	Poster        string  `gorm:"column:poster" db:"poster"`
+	Hide          bool    `gorm:"column:hide" sql:"default:0" db:"hide"`
 }
 
 // Init nnmc with login password
