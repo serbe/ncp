@@ -60,6 +60,8 @@ type Topic struct {
 // Torrent       Ссылка на torrent
 // Poster        Ссылка на постер
 // Hide          Скрывать в общем списке
+// UpdatedAt     Дата обновления записи БД
+// CreatedAt     Дата создания записи БД
 type Film struct {
 	ID            int64   `gorm:"column:id" sql:"AUTO_INCREMENT" db:"id"`
 	Name          string  `gorm:"column:name" db:"name"`
@@ -91,6 +93,8 @@ type Film struct {
 	Torrent       string  `gorm:"column:torrent" db:"torrent"`
 	Poster        string  `gorm:"column:poster" db:"poster"`
 	Hide          bool    `gorm:"column:hide" sql:"default:0" db:"hide"`
+	UpdatedAt     string  `gorm:"column:updated_at" db:"updated_at"`
+	CreatedAt     string  `gorm:"column:created_at" db:"created_at"`
 }
 
 // Init nnmc with login password
