@@ -116,6 +116,7 @@ func Init(login string, password string) (*NNMc, error) {
 
 // getHTML get body from url
 func getHTML(url string, n *NNMc) ([]byte, error) {
+	time.Sleep(2000 * time.Millisecond)
 	resp, err := n.client.Get(url)
 	if err != nil {
 		log.Println("client Get error:", err)
@@ -191,6 +192,9 @@ func (n *NNMc) ParseTopic(topic Topic) (Film, error) {
 	if err != nil {
 		return film, err
 	}
+	var reFn = regexp.MustCompile(`(\d{6})`)
+	filename := string(reFn.Find([]byte(film.Href)))
+	_ = ioutil.WriteFile(filename+".html", body, 0644)
 	if reTopic.Match(body) == false {
 		return film, fmt.Errorf("No topic in body")
 	}
