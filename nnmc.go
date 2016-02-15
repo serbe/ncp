@@ -60,7 +60,6 @@ type Topic struct {
 // DateCreate    Дата создания раздачи
 // Torrent       Ссылка на torrent
 // Poster        Ссылка на постер
-// Hide          Скрывать в общем списке
 // UpdatedAt     Дата обновления записи БД
 // CreatedAt     Дата создания записи БД
 type Film struct {
@@ -93,7 +92,6 @@ type Film struct {
 	DateCreate    string    `gorm:"column:date_create"    db:"date_create"`
 	Torrent       string    `gorm:"column:torrent"        db:"torrent"`
 	Poster        string    `gorm:"column:poster"         db:"poster"`
-	Hide          bool      `gorm:"column:hide"           db:"hide"           sql:"default:false"`
 	UpdatedAt     time.Time `gorm:"column:updated_at"     db:"updated_at"`
 	CreatedAt     time.Time `gorm:"column:created_at"     db:"created_at"`
 }
@@ -227,7 +225,11 @@ func (n *NNMc) ParseTopic(topic Topic) (Film, error) {
 		case "Качество видео", "Качество":
 			film.Quality = two
 		case "Перевод":
-			film.Translation = two
+			if caseInsensitiveContains(two, "не требуется") == false {
+				film.Translation = two
+			} else {
+				film.Translation = "Не требуется"
+			}
 		case "Вид субтитров":
 			film.SubtitlesType = two
 		case "Субтитры":
@@ -289,4 +291,9 @@ func replaceDate(s string) string {
 	s = strings.Replace(s, " Ноя ", ".11.", -1)
 	s = strings.Replace(s, " Дек ", ".12.", -1)
 	return s
+}
+
+func caseInsensitiveContains(s, substr string) bool {
+	s, substr = strings.ToUpper(s), strings.ToUpper(substr)
+	return strings.Contains(s, substr)
 }
