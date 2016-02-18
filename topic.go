@@ -1,4 +1,4 @@
-package nnmc
+package ncp
 
 import (
 	"regexp"

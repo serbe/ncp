@@ -1,4 +1,4 @@
-package nnmc
+package ncp
 
 import (
 	"bytes"
@@ -18,7 +18,7 @@ import (
 
 // NNMc values:
 // client http.Client with cookie
-type NNMc struct {
+type NCp struct {
 	client http.Client
 }
 
@@ -104,7 +104,7 @@ type Film struct {
 }
 
 // Init nnmc with login password
-func Init(login string, password string) (*NNMc, error) {
+func Init(login string, password string) (*NCp, error) {
 	var client http.Client
 	cookieJar, _ := cookiejar.New(nil)
 	client.Jar = cookieJar
@@ -118,11 +118,11 @@ func Init(login string, password string) (*NNMc, error) {
 	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
 	req.Header.Add("Content-Length", strconv.Itoa(len(form.Encode())))
 	_, err := client.Do(req)
-	return &NNMc{client: client}, err
+	return &NCp{client: client}, err
 }
 
 // getHTML get body from url
-func getHTML(url string, n *NNMc) ([]byte, error) {
+func getHTML(url string, n *NCp) ([]byte, error) {
 	resp, err := n.client.Get(url)
 	if err != nil {
 		log.Println("client Get error:", err)
@@ -144,7 +144,7 @@ func getHTML(url string, n *NNMc) ([]byte, error) {
 }
 
 // ParseForumTree get topics from forumTree
-func (n *NNMc) ParseForumTree(url string) ([]Topic, error) {
+func (n *NCp) ParseForumTree(url string) ([]Topic, error) {
 	var (
 		topics []Topic
 		reTree = regexp.MustCompile(`<a href="(viewtopic.php\?t=\d+)"class="topictitle">(.+?)\s\((\d{4})\)\s(.+?)</a>`)
@@ -169,7 +169,7 @@ func (n *NNMc) ParseForumTree(url string) ([]Topic, error) {
 }
 
 // ParseTopic get film from topic
-func (n *NNMc) ParseTopic(topic Topic) (Film, error) {
+func (n *NCp) ParseTopic(topic Topic) (Film, error) {
 	var (
 		film Film
 	)

@@ -1,8 +1,8 @@
-# nnmc
+# ncp
 Parser nnm-club forum for get films info
 
 # install
-go get github.com/serbe/nnmc
+go get github.com/serbe/ncp
 
 # example (not work if invalid user/password - view source code)
 ```go
@@ -11,11 +11,11 @@ package main
 import (
 	"fmt"
 
-	"github.com/serbe/nnmc"
+	"github.com/serbe/ncp"
 )
 
 func main() {
-	nnm, err := nnmc.Init("user", "password")
+	nnm, err := ncp.Init("user", "password")
 	if err != nil {
 		panic(err)
 	}
