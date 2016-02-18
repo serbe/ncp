@@ -28,6 +28,7 @@ type Topic struct {
 	Name    string
 	Year    string
 	Quality string
+	Body    []byte
 }
 
 // Film all values
@@ -51,6 +52,7 @@ type Topic struct {
 // SubtitlesType Вид субтитров
 // Subtitles     Субтитры
 // Video         Видео
+// Resolution    Разрешение видео
 // Audio         Аудио
 // Kinopoisk     Рейтинг кинопоиска
 // Imdb          Рейтинг IMDb
@@ -60,6 +62,8 @@ type Topic struct {
 // DateCreate    Дата создания раздачи
 // Torrent       Ссылка на torrent
 // Poster        Ссылка на постер
+// Seeders       Количество раздающих
+// Leechers      Количество скачивающих
 // UpdatedAt     Дата обновления записи БД
 // CreatedAt     Дата создания записи БД
 type Film struct {
@@ -83,6 +87,7 @@ type Film struct {
 	SubtitlesType string    `gorm:"column:subtitles_type" db:"subtitles_type" sql:"type:text"`
 	Subtitles     string    `gorm:"column:subtitles"      db:"subtitles"      sql:"type:text"`
 	Video         string    `gorm:"column:video"          db:"video"          sql:"type:text"`
+	Resolution    string    `gorm:"column:resolution"     db:"resolution"     sql:"type:text"`
 	Audio         string    `gorm:"column:audio"          db:"audio"          sql:"type:text"`
 	Kinopoisk     float64   `gorm:"column:kinopoisk"      db:"kinopoisk"`
 	IMDb          float64   `gorm:"column:imdb"           db:"imdb"`
@@ -92,6 +97,8 @@ type Film struct {
 	DateCreate    string    `gorm:"column:date_create"    db:"date_create"`
 	Torrent       string    `gorm:"column:torrent"        db:"torrent"`
 	Poster        string    `gorm:"column:poster"         db:"poster"`
+	Seeders       int64     `gorm:"column:seeders"        db:"seeders"`
+	Leechers      int64     `gorm:"column:leechers"       db:"leechers"`
 	UpdatedAt     time.Time `gorm:"column:updated_at"     db:"updated_at"`
 	CreatedAt     time.Time `gorm:"column:created_at"     db:"created_at"`
 }
@@ -164,13 +171,7 @@ func (n *NNMc) ParseForumTree(url string) ([]Topic, error) {
 // ParseTopic get film from topic
 func (n *NNMc) ParseTopic(topic Topic) (Film, error) {
 	var (
-		film     Film
-		reTopic  = regexp.MustCompile(`<span style="font-weight: bold">(Производство|Жанр|Режиссер|Продюсер|Актеры|Описание фильма|Описание|Возраст|Дата мировой премьеры|Дата премьеры в России|Дата Российской премьеры|Дата российской премьеры|Продолжительность|Качество видео|Качество|Перевод|Вид субтитров|Субтитры|Видео|Аудио):\s*<\/span>(.+?)<`)
-		reDate   = regexp.MustCompile(`> (\d{1,2} .{3} \d{4}).{9}<`)
-		reSize   = regexp.MustCompile(`Размер блока: \d.+?B"> (\d{1,2},\d{1,2}|\d{3,4}|\d{1,2})\s`)
-		reRating = regexp.MustCompile(`>(\d,\d|\d)<\/span>.+?\(Голосов:`)
-		reDl     = regexp.MustCompile(`<a href="download\.php\?id=(\d{5,7})" rel="nofollow">Скачать<`)
-		reImg    = regexp.MustCompile(`"postImg postImgAligned img-right" title="http:\/\/assets\.nnm-club\.ws\/forum\/image\.php\?link=(.+?jpe{0,1}g)`)
+		film Film
 	)
 	name := strings.Split(topic.Name, " / ")
 	switch len(name) {
@@ -191,86 +192,31 @@ func (n *NNMc) ParseTopic(topic Topic) (Film, error) {
 	if err != nil {
 		return film, err
 	}
-	// var reFn = regexp.MustCompile(`(\d{6})`)
-	// filename := string(reFn.Find([]byte(film.Href)))
-	// _ = ioutil.WriteFile(filename+".html", body, 0644)
-	if reTopic.Match(body) == false {
-		return film, fmt.Errorf("No topic in body")
-	}
-	findAttrs := reTopic.FindAllSubmatch(body, -1)
-	for _, v := range findAttrs {
-		one := strings.Trim(string(v[1]), " ")
-		two := strings.Replace(string(v[2]), "<br />", "", -1)
-		two = strings.Trim(two, " ")
-		switch one {
-		case "Производство":
-			film.Country = two
-		case "Жанр":
-			film.Genre = strings.ToLower(two)
-		case "Режиссер":
-			film.Director = two
-		case "Продюсер":
-			film.Producer = two
-		case "Актеры":
-			film.Actors = two
-		case "Описание фильма", "Описание":
-			film.Description = two
-		case "Возраст":
-			film.Age = two
-		case "Дата мировой премьеры":
-			film.ReleaseDate = two
-		case "Дата премьеры в России", "Дата российской премьеры", "Дата Российской премьеры":
-			film.RussianDate = two
-		case "Продолжительность":
-			if i64, err := strconv.ParseInt(two, 10, 64); err == nil {
-				film.Duration = i64
-			}
-		case "Качество видео", "Качество":
-			film.Quality = two
-		case "Перевод":
-			if caseInsensitiveContains(two, "не требуется") == false {
-				film.Translation = two
-			} else {
-				film.Translation = "Не требуется"
-			}
-		case "Вид субтитров":
-			film.SubtitlesType = two
-		case "Субтитры":
-			film.Subtitles = two
-		case "Видео":
-			film.Video = two
-		case "Аудио":
-			film.Audio = two
-		}
-	}
-	// if reDl.Match(body) == false {
-	// 	return film, fmt.Errorf("No torrent url in body")
-	// }
-	findDl := reDl.FindAllSubmatch(body, -1)
-	film.Torrent = "http://nnm-club.me/forum/download.php?id=" + string(findDl[0][1])
-	if reDate.Match(body) == true {
-		film.DateCreate = replaceDate(string(reDate.FindSubmatch(body)[1]))
-	}
-	if reSize.Match(body) == true {
-		size := string(reSize.FindSubmatch(body)[1])
-		size = strings.Replace(size, ",", ".", -1)
-		if s64, err := strconv.ParseFloat(size, 64); err == nil {
-			if s64 < 100 {
-				s64 = s64 * 1000
-			}
-			film.Size = int64(s64)
-		}
-	}
-	if reRating.Match(body) == true {
-		rating := string(reRating.FindSubmatch(body)[1])
-		rating = strings.Replace(rating, ",", ".", -1)
-		if r64, err := strconv.ParseFloat(rating, 64); err == nil {
-			film.NNM = r64
-		}
-	}
-	if reImg.Match(body) == true {
-		film.Poster = string(reImg.FindSubmatch(body)[1])
-	}
+	topic.Body = body
+	film.Country = topic.getCountry()
+	film.Genre = topic.getGenre()
+	film.Director = topic.getDirector()
+	film.Producer = topic.getProducer()
+	film.Actors = topic.getActors()
+	film.Description = topic.getDescription()
+	film.Age = topic.getAge()
+	film.ReleaseDate = topic.getReleaseDate()
+	film.RussianDate = topic.getRussianDate()
+	film.Duration = topic.getDuration()
+	film.Quality = topic.getQuality()
+	film.Translation = topic.getTranslation()
+	film.SubtitlesType = topic.getSubtitlesType()
+	film.Subtitles = topic.getSubtitles()
+	film.Video = topic.getVideo()
+	film.Resolution = getResolution(film.Video)
+	film.Audio = topic.getAudio()
+	film.Torrent = topic.getTorrent()
+	film.DateCreate = topic.getDate()
+	film.Size = topic.getSize()
+	film.NNM = topic.getRating()
+	film.Poster = topic.getPoster()
+	film.Seeders = topic.getSeeds()
+	film.Leechers = topic.getLeechs()
 	return film, nil
 }
 
@@ -299,4 +245,12 @@ func replaceDate(s string) string {
 func caseInsensitiveContains(s, substr string) bool {
 	s, substr = strings.ToUpper(s), strings.ToUpper(substr)
 	return strings.Contains(s, substr)
+}
+
+func cleanStr(str string) string {
+	var reSpan = regexp.MustCompile("<span .*?>")
+	str = strings.Replace(str, "<br />", "", -1)
+	str = reSpan.ReplaceAllString(str, "")
+	str = strings.Trim(str, " ")
+	return str
 }
