@@ -16,7 +16,7 @@ import (
 	"golang.org/x/net/html/charset"
 )
 
-// NNMc values:
+// NCp values:
 // client http.Client with cookie
 type NCp struct {
 	client http.Client
@@ -94,9 +94,9 @@ type Film struct {
 	NNM           float64   `gorm:"column:nnm"            db:"nnm"`
 	Sound         string    `gorm:"column:sound"          db:"sound"          sql:"type:text"`
 	Size          int64     `gorm:"column:size"           db:"size"`
-	DateCreate    string    `gorm:"column:date_create"    db:"date_create"`
-	Torrent       string    `gorm:"column:torrent"        db:"torrent"`
-	Poster        string    `gorm:"column:poster"         db:"poster"`
+	DateCreate    string    `gorm:"column:date_create"    db:"date_create"    sql:"type:text"`
+	Torrent       string    `gorm:"column:torrent"        db:"torrent"        sql:"type:text"`
+	Poster        string    `gorm:"column:poster"         db:"poster"         sql:"type:text"`
 	Seeders       int64     `gorm:"column:seeders"        db:"seeders"`
 	Leechers      int64     `gorm:"column:leechers"       db:"leechers"`
 	UpdatedAt     time.Time `gorm:"column:updated_at"     db:"updated_at"`
