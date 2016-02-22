@@ -139,7 +139,10 @@ func getHTML(url string, n *NCp) ([]byte, error) {
 	doc := buffer.Bytes()
 	doc = replaceAll(doc, "&nbsp;", " ")
 	doc = replaceAll(doc, "&amp;", "&")
-	doc = replaceAll(doc, "<br />", "")
+	doc = replaceAll(doc, "<br />", " ")
+	doc = replaceAll(body, "</span>:", ":</span>")
+	doc = replaceAll(doc, "  ", " ")
+	doc = removeTag(doc, `<span style="text-decoration:.+?">(.+?)</span>`)
 	return doc, nil
 }
 
@@ -222,8 +225,10 @@ func (n *NCp) ParseTopic(topic Topic) (Film, error) {
 
 func replaceAll(body []byte, from string, to string) []byte {
 	var reStr = regexp.MustCompile(from)
-	result := reStr.ReplaceAll(body, []byte(to))
-	return result
+	if reStr.Match(body) == false {
+		return body
+	}
+	return reStr.ReplaceAll(body, []byte(to))
 }
 
 func replaceDate(s string) string {
@@ -252,4 +257,16 @@ func cleanStr(str string) string {
 	str = reSpan.ReplaceAllString(str, "")
 	str = strings.Trim(str, " ")
 	return str
+}
+
+func removeTag(body []byte, tag string) []byte {
+	var reTag = regexp.MustCompile(tag)
+	if reTag.Match(body) == false {
+		return body
+	}
+	tags := reTag.FindAllSubmatch(body, -1)
+	for _, item := range tags {
+		body = bytes.Replace(body, item[0], item[1], 1)
+	}
+	return body
 }
