@@ -51,7 +51,9 @@ type Topic struct {
 // Subtitles     Субтитры
 // Video         Видео
 // Resolution    Разрешение видео
-// Audio         Аудио
+// Audio1        Аудио1
+// Audio2        Аудио2
+// Audio3        Аудио3
 // Kinopoisk     Рейтинг кинопоиска
 // Imdb          Рейтинг IMDb
 // NNM           Рейтинг nnm-club
@@ -86,7 +88,9 @@ type Film struct {
 	Subtitles     string    `gorm:"column:subtitles"      db:"subtitles"      sql:"type:text"`
 	Video         string    `gorm:"column:video"          db:"video"          sql:"type:text"`
 	Resolution    string    `gorm:"column:resolution"     db:"resolution"     sql:"type:text"`
-	Audio         string    `gorm:"column:audio"          db:"audio"          sql:"type:text"`
+	Audio1        string    `gorm:"column:audio1"         db:"audio1"         sql:"type:text"`
+	Audio2        string    `gorm:"column:audio2"         db:"audio2"         sql:"type:text"`
+	Audio3        string    `gorm:"column:audio3"         db:"audio3"         sql:"type:text"`
 	Kinopoisk     float64   `gorm:"column:kinopoisk"      db:"kinopoisk"`
 	IMDb          float64   `gorm:"column:imdb"           db:"imdb"`
 	NNM           float64   `gorm:"column:nnm"            db:"nnm"`
@@ -140,9 +144,10 @@ func getHTML(url string, n *NCp) ([]byte, error) {
 	doc = replaceAll(doc, "&nbsp;", " ")
 	doc = replaceAll(doc, "&amp;", "&")
 	doc = replaceAll(doc, "<br />", " ")
-	doc = replaceAll(body, "</span>:", ":</span>")
+	doc = replaceAll(doc, "</span>:", ":</span>")
 	doc = replaceAll(doc, "  ", " ")
 	doc = removeTag(doc, `<span style="text-decoration:.+?">(.+?)</span>`)
+	doc = removeTag(doc, `<span style="color:.+?">(.+?)</span>`)
 	return doc, nil
 }
 
@@ -212,7 +217,9 @@ func (n *NCp) ParseTopic(topic Topic) (Film, error) {
 	film.Subtitles = topic.getSubtitles()
 	film.Video = topic.getVideo()
 	film.Resolution = getResolution(film.Video)
-	film.Audio = topic.getAudio()
+	film.Audio1 = topic.getAudio1()
+	film.Audio2 = topic.getAudio2()
+	film.Audio3 = topic.getAudio3()
 	film.Torrent = topic.getTorrent()
 	film.DateCreate = topic.getDate()
 	film.Size = topic.getSize()
@@ -233,17 +240,29 @@ func replaceAll(body []byte, from string, to string) []byte {
 
 func replaceDate(s string) string {
 	s = strings.Replace(s, " Янв ", ".01.", -1)
+	s = strings.Replace(s, " января ", ".01.", -1)
 	s = strings.Replace(s, " Фев ", ".02.", -1)
+	s = strings.Replace(s, " февраля ", ".02.", -1)
 	s = strings.Replace(s, " Мар ", ".03.", -1)
+	s = strings.Replace(s, " марта ", ".03.", -1)
 	s = strings.Replace(s, " Апр ", ".04.", -1)
+	s = strings.Replace(s, " апреля ", ".04.", -1)
 	s = strings.Replace(s, " Май ", ".05.", -1)
+	s = strings.Replace(s, " мая ", ".05.", -1)
 	s = strings.Replace(s, " Июн ", ".06.", -1)
+	s = strings.Replace(s, " июня ", ".06.", -1)
 	s = strings.Replace(s, " Июл ", ".07.", -1)
+	s = strings.Replace(s, " июля ", ".07.", -1)
 	s = strings.Replace(s, " Авг ", ".08.", -1)
+	s = strings.Replace(s, " августа ", ".08.", -1)
 	s = strings.Replace(s, " Сен ", ".09.", -1)
+	s = strings.Replace(s, " сентября ", ".09.", -1)
 	s = strings.Replace(s, " Окт ", ".10.", -1)
+	s = strings.Replace(s, " октября ", ".10.", -1)
 	s = strings.Replace(s, " Ноя ", ".11.", -1)
+	s = strings.Replace(s, " ноября ", ".11.", -1)
 	s = strings.Replace(s, " Дек ", ".12.", -1)
+	s = strings.Replace(s, " декабря ", ".12.", -1)
 	return s
 }
 

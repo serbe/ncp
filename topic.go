@@ -198,6 +198,7 @@ func (t *Topic) getReleaseDate() string {
 	if reReleaseDate.Match(t.Body) == true {
 		releaseDate = string(reReleaseDate.FindSubmatch(t.Body)[1])
 		releaseDate = cleanStr(releaseDate)
+		releaseDate = replaceDate(releaseDate)
 	}
 	return releaseDate
 }
@@ -210,6 +211,7 @@ func (t *Topic) getRussianDate() string {
 	if reRussianDate.Match(t.Body) == true {
 		russianDate = string(reRussianDate.FindSubmatch(t.Body)[1])
 		russianDate = cleanStr(russianDate)
+		russianDate = replaceDate(russianDate)
 	}
 	return russianDate
 }
@@ -289,9 +291,33 @@ func (t *Topic) getVideo() string {
 	return video
 }
 
-func (t *Topic) getAudio() string {
+func (t *Topic) getAudio1() string {
 	var (
-		reAudio = regexp.MustCompile(`<span style="font-weight: bold">Аудио:\s*<\/span>(.+?)<`)
+		reAudio = regexp.MustCompile(`<span style="font-weight: bold">(?:Аудио\s?:\s*|Аудио\s?.?1.?:\s*)<\/span>(.+?)<`)
+		audio   string
+	)
+	if reAudio.Match(t.Body) == true {
+		audio = string(reAudio.FindSubmatch(t.Body)[1])
+		audio = cleanStr(audio)
+	}
+	return audio
+}
+
+func (t *Topic) getAudio2() string {
+	var (
+		reAudio = regexp.MustCompile(`<span style="font-weight: bold">Аудио\s?.?2.?:\s*<\/span>(.+?)<`)
+		audio   string
+	)
+	if reAudio.Match(t.Body) == true {
+		audio = string(reAudio.FindSubmatch(t.Body)[1])
+		audio = cleanStr(audio)
+	}
+	return audio
+}
+
+func (t *Topic) getAudio3() string {
+	var (
+		reAudio = regexp.MustCompile(`<span style="font-weight: bold">Аудио\s?.?3.?:\s*<\/span>(.+?)<`)
 		audio   string
 	)
 	if reAudio.Match(t.Body) == true {
