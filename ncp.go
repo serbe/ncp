@@ -12,8 +12,6 @@ import (
 	"strconv"
 	"strings"
 	"time"
-
-	"golang.org/x/net/html/charset"
 )
 
 // NCp values:
@@ -129,15 +127,16 @@ func getHTML(url string, n *NCp) ([]byte, error) {
 		return nil, err
 	}
 	defer resp.Body.Close()
-	utf8body, err := charset.NewReader(resp.Body, resp.Header.Get("Content-Type"))
-	if err != nil {
-		log.Println("Encoding error:", err)
-		return nil, err
-	}
-	doc, err := ioutil.ReadAll(utf8body)
+	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		log.Println("ioutil.ReadAll error:", err)
 	}
+	buffer := bytes.NewBufferString("")
+	for _, char := range body {
+		var ch = Utf(char)
+		fmt.Fprintf(buffer, "%c", ch)
+	}
+	doc := buffer.Bytes()
 	doc = replaceAll(doc, "&nbsp;", " ")
 	doc = replaceAll(doc, "&amp;", "&")
 	return doc, nil
