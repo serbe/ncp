@@ -139,6 +139,7 @@ func getHTML(url string, n *NCp) ([]byte, error) {
 	doc := buffer.Bytes()
 	doc = replaceAll(doc, "&nbsp;", " ")
 	doc = replaceAll(doc, "&amp;", "&")
+	doc = replaceAll(doc, "<br />", "")
 	return doc, nil
 }
 
@@ -248,7 +249,6 @@ func caseInsensitiveContains(s, substr string) bool {
 
 func cleanStr(str string) string {
 	var reSpan = regexp.MustCompile("<span .*?>")
-	str = strings.Replace(str, "<br />", "", -1)
 	str = reSpan.ReplaceAllString(str, "")
 	str = strings.Trim(str, " ")
 	return str
