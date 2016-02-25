@@ -216,14 +216,14 @@ func (t *Topic) getRussianDate() string {
 	return russianDate
 }
 
-func (t *Topic) getDuration() int64 {
+func (t *Topic) getDuration() string {
 	var (
 		reDuration = regexp.MustCompile(`<span style="font-weight: bold">Продолжительность:\s*<\/span>(.+?)<`)
-		duration   int64
+		duration   string
 	)
 	if reDuration.Match(t.Body) == true {
-		dur := reDuration.FindSubmatch(t.Body)
-		duration, _ = strconv.ParseInt(string(dur[1]), 10, 64)
+		duration = string(reDuration.FindSubmatch(t.Body)[1])
+		duration = cleanStr(duration)
 	}
 	return duration
 }

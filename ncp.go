@@ -81,7 +81,7 @@ type Film struct {
 	Age           string    `gorm:"column:age"            db:"age"            sql:"type:text"`
 	ReleaseDate   string    `gorm:"column:release_date"   db:"release_date"   sql:"type:text"`
 	RussianDate   string    `gorm:"column:russian_date"   db:"russian_date"   sql:"type:text"`
-	Duration      int64     `gorm:"column:duration"       db:"duration"`
+	Duration      string    `gorm:"column:duration"       db:"duration"       sql:"type:text"`
 	Quality       string    `gorm:"column:quality"        db:"quality"        sql:"type:text"`
 	Translation   string    `gorm:"column:translation"    db:"translation"    sql:"type:text"`
 	SubtitlesType string    `gorm:"column:subtitles_type" db:"subtitles_type" sql:"type:text"`
@@ -94,7 +94,6 @@ type Film struct {
 	Kinopoisk     float64   `gorm:"column:kinopoisk"      db:"kinopoisk"`
 	IMDb          float64   `gorm:"column:imdb"           db:"imdb"`
 	NNM           float64   `gorm:"column:nnm"            db:"nnm"`
-	Sound         string    `gorm:"column:sound"          db:"sound"          sql:"type:text"`
 	Size          int64     `gorm:"column:size"           db:"size"`
 	DateCreate    string    `gorm:"column:date_create"    db:"date_create"    sql:"type:text"`
 	Torrent       string    `gorm:"column:torrent"        db:"torrent"        sql:"type:text"`
