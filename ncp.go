@@ -265,6 +265,10 @@ func replaceDate(s string) string {
 	s = strings.Replace(s, " ноября ", ".11.", -1)
 	s = strings.Replace(s, " Дек ", ".12.", -1)
 	s = strings.Replace(s, " декабря ", ".12.", -1)
+	split := strings.Split(s, ".")
+	if len(split[0]) == 1 {
+		s = "0" + s
+	}
 	return s
 }
 
