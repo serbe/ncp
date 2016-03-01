@@ -225,7 +225,7 @@ func (t *Topic) getDuration() string {
 		duration = string(reDuration.FindSubmatch(t.Body)[1])
 		duration = cleanStr(duration)
 	} else {
-		reDuration = regexp.MustCompile(`<br \/>Продолжительность\s+?&#58; (\d{1,2}) ч\. (\d{1,2}) м\.`)
+		reDuration = regexp.MustCompile(`\sПродолжительность\s+?&#58; (\d{1,2}) ч\. (\d{1,2}) м\.`)
 		if reDuration.Match(t.Body) == true {
 			submatch := reDuration.FindSubmatch(t.Body)
 			hour := string(submatch[1])
