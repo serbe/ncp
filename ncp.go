@@ -194,6 +194,10 @@ func (n *NCp) ParseTopic(topic Topic) (Film, error) {
 		film.Name = strings.Trim(name[0], " ")
 		film.EngName = strings.Trim(name[2], " ")
 	}
+	film.Name = strings.Replace(film.Name, ":", ": ", -1)
+	film.Name = strings.Replace(film.Name, "  ", " ", -1)
+	film.EngName = strings.Replace(film.EngName, ":", ": ", -1)
+	film.EngName = strings.Replace(film.EngName, "  ", " ", -1)
 	film.Href = topic.Href
 	if year64, err := strconv.ParseInt(topic.Year, 10, 64); err == nil {
 		film.Year = year64
