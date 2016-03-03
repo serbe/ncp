@@ -268,6 +268,6 @@ var utf = [256]uint16{
 	0xFE: 0x044E,
 	0xFF: 0x044F}
 
-func Utf(a byte) uint16 {
+func toUtf(a byte) uint16 {
 	return utf[a]
 }

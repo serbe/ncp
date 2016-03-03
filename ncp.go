@@ -136,7 +136,7 @@ func getHTML(url string, n *NCp) ([]byte, error) {
 	}
 	buffer := bytes.NewBufferString("")
 	for _, char := range body {
-		var ch = Utf(char)
+		var ch = toUtf(char)
 		fmt.Fprintf(buffer, "%c", ch)
 	}
 	doc := buffer.Bytes()
