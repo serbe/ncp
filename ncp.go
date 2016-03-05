@@ -142,6 +142,7 @@ func getHTML(url string, n *NCp) ([]byte, error) {
 	doc := buffer.Bytes()
 	doc = replaceAll(doc, "&nbsp;", " ")
 	doc = replaceAll(doc, "&amp;", "&")
+	doc = replaceAll(doc, "&quot;", "'")
 	doc = replaceAll(doc, "<br />", " ")
 	doc = replaceAll(doc, "</span>:", ":</span>")
 	doc = replaceAll(doc, "  ", " ")
