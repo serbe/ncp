@@ -259,12 +259,10 @@ func (t *Topic) getTranslation() string {
 		reTranslation = regexp.MustCompile(`<span style="font-weight: bold">Перевод:\s*<\/span>(.+?)<`)
 		translation   string
 	)
+	translation = "Не требуется"
 	if reTranslation.Match(t.Body) == true {
 		translation = string(reTranslation.FindSubmatch(t.Body)[1])
 		translation = cleanStr(translation)
-		// if caseInsensitiveContains(translation, "не требуется") == true {
-		// 	translation = "Не требуется"
-		// }
 	}
 	return translation
 }
