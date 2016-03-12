@@ -49,6 +49,18 @@ func (t *Topic) getTorrent() string {
 	return torrent
 }
 
+func (t *Topic) getMagnet() string {
+	var (
+		reMag  = regexp.MustCompile(`href="(magnet.+?)"`)
+		magnet string
+	)
+	if reMag.Match(t.Body) == true {
+		findMag := reMag.FindSubmatch(t.Body)
+		magnet = string(findMag[1])
+	}
+	return magnet
+}
+
 func (t *Topic) getPoster() string {
 	var (
 		rePos = regexp.MustCompile(`"postImg postImgAligned img-right" title="http:\/\/assets\.nnm-club\.ws\/forum\/image\.php\?link=(.+?jpe{0,1}g)`)
@@ -238,6 +250,9 @@ func (t *Topic) getDuration() string {
 			}
 			duration = hour + ":" + minute + ":00"
 		}
+	}
+	if len(duration) < 5 {
+		duration = ""
 	}
 	return duration
 }

@@ -61,6 +61,7 @@ type Topic struct {
 // Size          Размер
 // DateCreate    Дата создания раздачи
 // Torrent       Ссылка на torrent
+// Magnet        Ссылка на magnet
 // Poster        Ссылка на постер
 // Seeders       Количество раздающих
 // Leechers      Количество скачивающих
@@ -97,6 +98,7 @@ type Film struct {
 	Size          int64     `gorm:"column:size"           db:"size"`
 	DateCreate    string    `gorm:"column:date_create"    db:"date_create"    sql:"type:text"`
 	Torrent       string    `gorm:"column:torrent"        db:"torrent"        sql:"type:text"`
+	Magnet        string    `gorm:"column:magnet"         db:"magnet"         sql:"type:text"`
 	Poster        string    `gorm:"column:poster"         db:"poster"         sql:"type:text"`
 	Seeders       int64     `gorm:"column:seeders"        db:"seeders"`
 	Leechers      int64     `gorm:"column:leechers"       db:"leechers"`
@@ -228,6 +230,7 @@ func (n *NCp) ParseTopic(topic Topic) (Film, error) {
 	film.Audio2 = topic.getAudio2()
 	film.Audio3 = topic.getAudio3()
 	film.Torrent = topic.getTorrent()
+	film.Magnet = topic.getMagnet()
 	film.DateCreate = topic.getDate()
 	film.Size = topic.getSize()
 	film.NNM = topic.getRating()
