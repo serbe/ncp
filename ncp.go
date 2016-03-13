@@ -157,7 +157,7 @@ func getHTML(url string, n *NCp) ([]byte, error) {
 func (n *NCp) ParseForumTree(url string) ([]Topic, error) {
 	var (
 		topics []Topic
-		reTree = regexp.MustCompile(`<a href="(viewtopic.php\?t=\d+)"class="topictitle">(.+?)\s\((\d{4})\)\s(.+?)</a>`)
+		reTree = regexp.MustCompile(`<a href="viewtopic.php\?t=(\d+)"class="topictitle">(.+?)\s\((\d{4})\)\s(.+?)</a>`)
 	)
 	body, err := getHTML(url, n)
 	if err != nil {
@@ -169,7 +169,7 @@ func (n *NCp) ParseForumTree(url string) ([]Topic, error) {
 	findResult := reTree.FindAllSubmatch(body, -1)
 	for _, v := range findResult {
 		var t Topic
-		t.Href = "http://nnm-club.me/forum/" + string(v[1])
+		t.Href = string(v[1])
 		t.Name = string(v[2])
 		t.Year = string(v[3])
 		t.Quality = string(v[4])
@@ -205,7 +205,7 @@ func (n *NCp) ParseTopic(topic Topic) (Film, error) {
 	if year64, err := strconv.ParseInt(topic.Year, 10, 64); err == nil {
 		film.Year = year64
 	}
-	body, err := getHTML(film.Href, n)
+	body, err := getHTML("http://nnm-club.me/forum/viewtopic.php?t="+film.Href, n)
 	if err != nil {
 		return film, err
 	}

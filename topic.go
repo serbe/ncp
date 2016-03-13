@@ -44,7 +44,8 @@ func (t *Topic) getTorrent() string {
 	)
 	if reTor.Match(t.Body) == true {
 		findTor := reTor.FindSubmatch(t.Body)
-		torrent = "http://nnm-club.me/forum/download.php?id=" + string(findTor[1])
+		torrent = string(findTor[1])
+		// http://nnm-club.me/forum/download.php?id=
 	}
 	return torrent
 }
@@ -57,6 +58,7 @@ func (t *Topic) getMagnet() string {
 	if reMag.Match(t.Body) == true {
 		findMag := reMag.FindSubmatch(t.Body)
 		magnet = string(findMag[1])
+		// magnet:?xt=urn:btih:
 	}
 	return magnet
 }
