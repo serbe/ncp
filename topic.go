@@ -51,7 +51,7 @@ func (t *Topic) getTorrent() string {
 
 func (t *Topic) getMagnet() string {
 	var (
-		reMag  = regexp.MustCompile(`href="(magnet.+?)"`)
+		reMag  = regexp.MustCompile(`href="magnet:\?xt=urn:btih:(.+?)(?:"|&)`)
 		magnet string
 	)
 	if reMag.Match(t.Body) == true {
