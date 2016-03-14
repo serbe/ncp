@@ -124,9 +124,9 @@ func Init(login string, password string) (*NCp, error) {
 	return &NCp{client: client}, err
 }
 
-// getHTML get body from url
-func getHTML(url string, n *NCp) ([]byte, error) {
-	resp, err := n.client.Get(url)
+// getHTML get body from href
+func getHTML(href string, n *NCp, debug bool) ([]byte, error) {
+	resp, err := n.client.Get(href)
 	if err != nil {
 		log.Println("client Get error:", err)
 		return nil, err
@@ -150,16 +150,27 @@ func getHTML(url string, n *NCp) ([]byte, error) {
 	doc = replaceAll(doc, "  ", " ")
 	doc = removeTag(doc, `<span style="text-decoration:.+?">(.+?)</span>`)
 	doc = removeTag(doc, `<span style="color:.+?">(.+?)</span>`)
+
+	if debug {
+		u, err := url.Parse(href)
+		if err == nil {
+			q := u.Query()
+			t := q.Get("t")
+			if t != "" {
+				ioutil.WriteFile(t+".html", doc, 0600)
+			}
+		}
+	}
 	return doc, nil
 }
 
 // ParseForumTree get topics from forumTree
-func (n *NCp) ParseForumTree(url string) ([]Topic, error) {
+func (n *NCp) ParseForumTree(href string, debug bool) ([]Topic, error) {
 	var (
 		topics []Topic
 		reTree = regexp.MustCompile(`<a href="viewtopic.php\?t=(\d+)"class="topictitle">(.+?)\s\((\d{4})\)\s(.+?)</a>`)
 	)
-	body, err := getHTML(url, n)
+	body, err := getHTML(href, n, debug)
 	if err != nil {
 		return topics, err
 	}
@@ -179,7 +190,7 @@ func (n *NCp) ParseForumTree(url string) ([]Topic, error) {
 }
 
 // ParseTopic get film from topic
-func (n *NCp) ParseTopic(topic Topic) (Film, error) {
+func (n *NCp) ParseTopic(topic Topic, debug bool) (Film, error) {
 	var (
 		film Film
 	)
@@ -205,7 +216,7 @@ func (n *NCp) ParseTopic(topic Topic) (Film, error) {
 	if year64, err := strconv.ParseInt(topic.Year, 10, 64); err == nil {
 		film.Year = year64
 	}
-	body, err := getHTML("http://nnm-club.me/forum/viewtopic.php?t="+film.Href, n)
+	body, err := getHTML("http://nnm-club.me/forum/viewtopic.php?t="+film.Href, n, debug)
 	if err != nil {
 		return film, err
 	}
