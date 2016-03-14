@@ -140,6 +140,7 @@ func (t *Topic) getGenre() string {
 	if reGenre.Match(t.Body) == true {
 		genre = string(reGenre.FindSubmatch(t.Body)[1])
 		genre = strings.ToLower(cleanStr(genre))
+		genre = strings.Trim(genre, ".")
 	}
 	return genre
 }
@@ -152,6 +153,7 @@ func (t *Topic) getDirector() string {
 	if reDirector.Match(t.Body) == true {
 		director = string(reDirector.FindSubmatch(t.Body)[1])
 		director = cleanStr(director)
+		director = strings.Trim(director, ".")
 	}
 	return director
 }
@@ -164,6 +166,7 @@ func (t *Topic) getProducer() string {
 	if reProducer.Match(t.Body) == true {
 		producer = string(reProducer.FindSubmatch(t.Body)[1])
 		producer = cleanStr(producer)
+		producer = strings.Trim(producer, ".")
 	}
 	return producer
 }
@@ -176,6 +179,7 @@ func (t *Topic) getActors() string {
 	if reActors.Match(t.Body) == true {
 		actors = string(reActors.FindSubmatch(t.Body)[1])
 		actors = cleanStr(actors)
+		actors = strings.Trim(actors, ".")
 	}
 	return actors
 }
