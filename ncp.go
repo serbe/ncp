@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"net/http/cookiejar"
 	"net/url"
+	"os"
 	"regexp"
 	"strconv"
 	"strings"
@@ -107,8 +108,9 @@ type Film struct {
 }
 
 // Init nnmc with login password
-func Init(login string, password string) (*NCp, error) {
+func Init(login string, password string, proxy string) (*NCp, error) {
 	var client http.Client
+	os.Setenv("HTTP_PROXY", proxy)
 	cookieJar, _ := cookiejar.New(nil)
 	client.Jar = cookieJar
 	urlPost := "http://nnm-club.me/forum/login.php"
