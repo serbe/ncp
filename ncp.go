@@ -113,7 +113,7 @@ func Init(login string, password string, proxy string) (*NCp, error) {
 	os.Setenv("HTTP_PROXY", proxy)
 	cookieJar, _ := cookiejar.New(nil)
 	client.Jar = cookieJar
-	urlPost := "http://nnm-club.me/forum/login.php"
+	urlPost := "http://nnmclub.to/forum/login.php"
 	form := url.Values{}
 	form.Set("username", login)
 	form.Add("password", password)
@@ -153,7 +153,7 @@ func getHTML(href string, n *NCp, debug bool) ([]byte, error) {
 	doc = removeTag(doc, `<span style="text-decoration:.+?">(.+?)</span>`)
 	doc = removeTag(doc, `<span style="color:.+?">(.+?)</span>`)
 
-	if debug {
+	if debug == true {
 		u, err := url.Parse(href)
 		if err == nil {
 			q := u.Query()
