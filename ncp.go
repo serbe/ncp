@@ -170,7 +170,7 @@ func getHTML(href string, n *NCp, debug bool) ([]byte, error) {
 func (n *NCp) ParseForumTree(href string, debug bool) ([]Topic, error) {
 	var (
 		topics []Topic
-		reTree = regexp.MustCompile(`<a href="viewtopic.php\?t=(\d+)"class="topictitle">(.+?)\s\((\d{4})\)\s(.+?)</a>`)
+		reTree = regexp.MustCompile(`<a href="viewtopic.php\?t=(\d+).+?"class="topictitle">(.+?)\s\((\d{4})\)\s(.+?)</a>`)
 	)
 	body, err := getHTML(href, n, debug)
 	if err != nil {
