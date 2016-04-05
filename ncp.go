@@ -110,7 +110,9 @@ type Film struct {
 // Init nnmc with login password
 func Init(login string, password string, proxy string) (*NCp, error) {
 	var client http.Client
-	os.Setenv("HTTP_PROXY", proxy)
+	if proxy != "" {
+		os.Setenv("HTTP_PROXY", proxy)
+	}
 	cookieJar, _ := cookiejar.New(nil)
 	client.Jar = cookieJar
 	urlPost := "http://nnmclub.to/forum/login.php"
@@ -158,8 +160,15 @@ func getHTML(href string, n *NCp, debug bool) ([]byte, error) {
 		if err == nil {
 			q := u.Query()
 			t := q.Get("t")
+			f := q.Get("f")
 			if t != "" {
 				ioutil.WriteFile(t+".html", doc, 0600)
+			} else {
+				if f != "" {
+					ioutil.WriteFile(f+".html", doc, 0600)
+				} else {
+					ioutil.WriteFile(u.Path+".html", doc, 0600)
+				}
 			}
 		}
 	}
@@ -218,7 +227,7 @@ func (n *NCp) ParseTopic(topic Topic, debug bool) (Film, error) {
 	if year64, err := strconv.ParseInt(topic.Year, 10, 64); err == nil {
 		film.Year = year64
 	}
-	body, err := getHTML("http://nnm-club.me/forum/viewtopic.php?t="+film.Href, n, debug)
+	body, err := getHTML("http://nnmclub.to/forum/viewtopic.php?t="+film.Href, n, debug)
 	if err != nil {
 		return film, err
 	}
