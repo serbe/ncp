@@ -18,7 +18,8 @@ import (
 // NCp values:
 // client http.Client with cookie
 type NCp struct {
-	client http.Client
+	client      http.Client
+	baseAddress string
 }
 
 // Topic from forum
@@ -108,14 +109,14 @@ type Film struct {
 }
 
 // Init nnmc with login password
-func Init(login string, password string, proxy string) (*NCp, error) {
+func Init(login string, password string, baseAddress string, proxy string) (*NCp, error) {
 	var client http.Client
 	if proxy != "" {
 		os.Setenv("HTTP_PROXY", proxy)
 	}
 	cookieJar, _ := cookiejar.New(nil)
 	client.Jar = cookieJar
-	urlPost := "http://nnmclub.to/forum/login.php"
+	urlPost := baseAddress + "/forum/login.php"
 	form := url.Values{}
 	form.Set("username", login)
 	form.Add("password", password)
@@ -125,7 +126,7 @@ func Init(login string, password string, proxy string) (*NCp, error) {
 	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
 	req.Header.Add("Content-Length", strconv.Itoa(len(form.Encode())))
 	_, err := client.Do(req)
-	return &NCp{client: client}, err
+	return &NCp{client: client, baseAddress: baseAddress}, err
 }
 
 // getHTML get body from href
@@ -181,7 +182,7 @@ func (n *NCp) ParseForumTree(href string, debug bool) ([]Topic, error) {
 		topics []Topic
 		reTree = regexp.MustCompile(`<a href="viewtopic.php\?t=(\d+).*?"class="topictitle">(.+?)\s\((\d{4})\)\s(.+?)</a>`)
 	)
-	body, err := getHTML(href, n, debug)
+	body, err := getHTML(n.baseAddress+href, n, debug)
 	if err != nil {
 		return topics, err
 	}
@@ -227,7 +228,7 @@ func (n *NCp) ParseTopic(topic Topic, debug bool) (Film, error) {
 	if year64, err := strconv.ParseInt(topic.Year, 10, 64); err == nil {
 		film.Year = year64
 	}
-	body, err := getHTML("http://nnmclub.to/forum/viewtopic.php?t="+film.Href, n, debug)
+	body, err := getHTML(n.baseAddress+"/forum/viewtopic.php?t="+film.Href, n, debug)
 	if err != nil {
 		return film, err
 	}
