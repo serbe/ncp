@@ -65,7 +65,7 @@ func (t *Topic) getMagnet() string {
 
 func (t *Topic) getPoster() string {
 	var (
-		rePos = regexp.MustCompile(`"postImg postImgAligned img-right" title="http:\/\/assets\.nnm-club\.ws\/forum\/image\.php\?link=(.+?jpe{0,1}g)`)
+		rePos = regexp.MustCompile(`"postImg postImgAligned img-right" title="http:\/\/assets\..*?\/forum\/image\.php\?link=(.+?jpe{0,1}g)`)
 		image string
 	)
 	if rePos.Match(t.Body) == true {
