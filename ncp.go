@@ -38,6 +38,7 @@ type Topic struct {
 // Year          Год
 // Genre         Жанр
 // Country       Производство
+// RawCountry    Производство (оригинальная строка)
 // Director      Режиссер
 // Producer      Продюсер
 // Actors        Актеры
