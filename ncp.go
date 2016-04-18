@@ -12,7 +12,6 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
-	"time"
 )
 
 // NCp values:
@@ -32,7 +31,6 @@ type Topic struct {
 }
 
 // Film all values
-// ID            id
 // Section       Раздел форума
 // Name          Название
 // EngName       Английское название
@@ -68,46 +66,41 @@ type Topic struct {
 // Poster        Ссылка на постер
 // Seeders       Количество раздающих
 // Leechers      Количество скачивающих
-// UpdatedAt     Дата обновления записи БД
-// CreatedAt     Дата создания записи БД
 type Film struct {
-	ID            int64     `gorm:"column:id"             db:"id"             sql:"AUTO_INCREMENT"`
-	Name          string    `gorm:"column:name"           db:"name"           sql:"type:text"`
-	EngName       string    `gorm:"column:eng_name"       db:"eng_name"       sql:"type:text"`
-	Href          string    `gorm:"column:href"           db:"href"           sql:"type:text"`
-	Year          int64     `gorm:"column:year"           db:"year"`
-	Genre         []string  `gorm:"column:genre"          db:"genre"          sql:"type:text[]"`
-	Country       []string  `gorm:"column:country"        db:"country"        sql:"type:text[]"`
-	RawCountry    string    `gorm:"column:raw_country"    db:"raw_country"    sql:"type:text"`
-	Director      []string  `gorm:"column:director"       db:"director"       sql:"type:text[]"`
-	Producer      []string  `gorm:"column:producer"       db:"producer"       sql:"type:text[]"`
-	Actors        []string  `gorm:"column:actors"         db:"actors"         sql:"type:text[]"`
-	Description   string    `gorm:"column:description"    db:"description"    sql:"type:text"`
-	Age           string    `gorm:"column:age"            db:"age"            sql:"type:text"`
-	ReleaseDate   string    `gorm:"column:release_date"   db:"release_date"   sql:"type:text"`
-	RussianDate   string    `gorm:"column:russian_date"   db:"russian_date"   sql:"type:text"`
-	Duration      string    `gorm:"column:duration"       db:"duration"       sql:"type:text"`
-	Quality       string    `gorm:"column:quality"        db:"quality"        sql:"type:text"`
-	Translation   string    `gorm:"column:translation"    db:"translation"    sql:"type:text"`
-	SubtitlesType string    `gorm:"column:subtitles_type" db:"subtitles_type" sql:"type:text"`
-	Subtitles     string    `gorm:"column:subtitles"      db:"subtitles"      sql:"type:text"`
-	Video         string    `gorm:"column:video"          db:"video"          sql:"type:text"`
-	Resolution    string    `gorm:"column:resolution"     db:"resolution"     sql:"type:text"`
-	Audio1        string    `gorm:"column:audio1"         db:"audio1"         sql:"type:text"`
-	Audio2        string    `gorm:"column:audio2"         db:"audio2"         sql:"type:text"`
-	Audio3        string    `gorm:"column:audio3"         db:"audio3"         sql:"type:text"`
-	Kinopoisk     float64   `gorm:"column:kinopoisk"      db:"kinopoisk"`
-	IMDb          float64   `gorm:"column:imdb"           db:"imdb"`
-	NNM           float64   `gorm:"column:nnm"            db:"nnm"`
-	Size          int64     `gorm:"column:size"           db:"size"`
-	DateCreate    string    `gorm:"column:date_create"    db:"date_create"    sql:"type:text"`
-	Torrent       string    `gorm:"column:torrent"        db:"torrent"        sql:"type:text"`
-	Magnet        string    `gorm:"column:magnet"         db:"magnet"         sql:"type:text"`
-	Poster        string    `gorm:"column:poster"         db:"poster"         sql:"type:text"`
-	Seeders       int64     `gorm:"column:seeders"        db:"seeders"`
-	Leechers      int64     `gorm:"column:leechers"       db:"leechers"`
-	UpdatedAt     time.Time `gorm:"column:updated_at"     db:"updated_at"`
-	CreatedAt     time.Time `gorm:"column:created_at"     db:"created_at"`
+	Name          string
+	EngName       string
+	Href          string
+	Year          int64
+	Genre         []string
+	Country       []string
+	RawCountry    string
+	Director      []string
+	Producer      []string
+	Actors        []string
+	Description   string
+	Age           string
+	ReleaseDate   string
+	RussianDate   string
+	Duration      string
+	Quality       string
+	Translation   string
+	SubtitlesType string
+	Subtitles     string
+	Video         string
+	Resolution    string
+	Audio1        string
+	Audio2        string
+	Audio3        string
+	Kinopoisk     float64
+	IMDb          float64
+	NNM           float64
+	Size          int64
+	DateCreate    string
+	Torrent       string
+	Magnet        string
+	Poster        string
+	Seeders       int64
+	Leechers      int64
 }
 
 // Init nnmc with login password
