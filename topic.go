@@ -6,6 +6,18 @@ import (
 	"strings"
 )
 
+func (t *Topic) getSection() string {
+	var (
+		reSection = regexp.MustCompile(`<a class="maintitle" href="viewforum.php?f=\d+?">(.+?)</a>`)
+		section   string
+	)
+	if reSection.Match(t.Body) == true {
+		section = string(reSection.FindSubmatch(t.Body)[1])
+		section = cleanStr(section)
+	}
+	return section
+}
+
 func (t *Topic) getRating() float64 {
 	var (
 		reRating = regexp.MustCompile(`>(\d,\d|\d)<\/span>.+?\(Голосов:`)
@@ -120,66 +132,79 @@ func getResolution(str string) string {
 	return resolution
 }
 
-func (t *Topic) getCountry() string {
+func (t *Topic) getCountry() ([]string, string) {
 	var (
-		reCountry = regexp.MustCompile(`<span style="font-weight: bold">Производство:\s*<\/span>(.+?)<`)
-		country   string
+		reCountry  = regexp.MustCompile(`<span style="font-weight: bold">Производство:\s*<\/span>(.+?)<`)
+		rawCountry string
+		country    []string
 	)
 	if reCountry.Match(t.Body) == true {
-		country = string(reCountry.FindSubmatch(t.Body)[1])
-		country = cleanStr(country)
+		rawCountry = string(reCountry.FindSubmatch(t.Body)[1])
+		rawCountry = cleanStr(rawCountry)
 	}
-	return country
+	lowerRawCountry := strings.ToLower(rawCountry)
+	for _, item := range counriesList {
+		i := strings.Index(lowerRawCountry, strings.ToLower(item))
+		if i != -1 {
+			country = append(country, item)
+			lowerRawCountry = lowerRawCountry[:i] + lowerRawCountry[i+len(item):]
+		}
+	}
+	return country, rawCountry
 }
 
-func (t *Topic) getGenre() string {
+func (t *Topic) getGenre() []string {
 	var (
 		reGenre = regexp.MustCompile(`<span style="font-weight: bold">Жанр:\s*<\/span>(.+?)<`)
-		genre   string
+		genre   []string
 	)
 	if reGenre.Match(t.Body) == true {
-		genre = string(reGenre.FindSubmatch(t.Body)[1])
-		genre = strings.ToLower(cleanStr(genre))
-		genre = strings.Trim(genre, ".")
+		str := string(reGenre.FindSubmatch(t.Body)[1])
+		str = strings.ToLower(cleanStr(str))
+		str = strings.Trim(str, ".")
+		genre = stringToStruct(str)
 	}
 	return genre
 }
 
-func (t *Topic) getDirector() string {
+func (t *Topic) getDirector() []string {
 	var (
 		reDirector = regexp.MustCompile(`<span style="font-weight: bold">Режиссер:\s*<\/span>(.+?)<`)
-		director   string
+		director   []string
 	)
 	if reDirector.Match(t.Body) == true {
-		director = string(reDirector.FindSubmatch(t.Body)[1])
-		director = cleanStr(director)
-		director = strings.Trim(director, ".")
+		str := string(reDirector.FindSubmatch(t.Body)[1])
+		str = cleanStr(str)
+		str = strings.Trim(str, ".")
+		director = stringToStruct(str)
 	}
 	return director
 }
 
-func (t *Topic) getProducer() string {
+func (t *Topic) getProducer() []string {
 	var (
 		reProducer = regexp.MustCompile(`<span style="font-weight: bold">Продюсер:\s*<\/span>(.+?)<`)
-		producer   string
+		producer   []string
 	)
 	if reProducer.Match(t.Body) == true {
-		producer = string(reProducer.FindSubmatch(t.Body)[1])
-		producer = cleanStr(producer)
-		producer = strings.Trim(producer, ".")
+		str := string(reProducer.FindSubmatch(t.Body)[1])
+		str = cleanStr(str)
+		str = strings.Trim(str, ".")
+		producer = stringToStruct(str)
 	}
 	return producer
 }
 
-func (t *Topic) getActors() string {
+func (t *Topic) getActors() []string {
 	var (
 		reActors = regexp.MustCompile(`<span style="font-weight: bold">Актеры:\s*<\/span>(.+?)<`)
-		actors   string
+		actors   []string
 	)
 	if reActors.Match(t.Body) == true {
-		actors = string(reActors.FindSubmatch(t.Body)[1])
-		actors = cleanStr(actors)
-		actors = strings.Trim(actors, ".")
+		str := string(reActors.FindSubmatch(t.Body)[1])
+		str = cleanStr(str)
+		str = strings.Trim(str, ".")
+		actors = stringToStruct(str)
 	}
 	return actors
 }

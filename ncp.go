@@ -33,6 +33,7 @@ type Topic struct {
 
 // Film all values
 // ID            id
+// Section       Раздел форума
 // Name          Название
 // EngName       Английское название
 // Href          Ссылка
@@ -75,11 +76,12 @@ type Film struct {
 	EngName       string    `gorm:"column:eng_name"       db:"eng_name"       sql:"type:text"`
 	Href          string    `gorm:"column:href"           db:"href"           sql:"type:text"`
 	Year          int64     `gorm:"column:year"           db:"year"`
-	Genre         string    `gorm:"column:genre"          db:"genre"          sql:"type:text"`
-	Country       string    `gorm:"column:country"        db:"country"        sql:"type:text"`
-	Director      string    `gorm:"column:director"       db:"director"       sql:"type:text"`
-	Producer      string    `gorm:"column:producer"       db:"producer"       sql:"type:text"`
-	Actors        string    `gorm:"column:actors"         db:"actors"         sql:"type:text"`
+	Genre         []string  `gorm:"column:genre"          db:"genre"          sql:"type:text[]"`
+	Country       []string  `gorm:"column:country"        db:"country"        sql:"type:text[]"`
+	RawCountry    string    `gorm:"column:raw_country"    db:"raw_country"    sql:"type:text"`
+	Director      []string  `gorm:"column:director"       db:"director"       sql:"type:text[]"`
+	Producer      []string  `gorm:"column:producer"       db:"producer"       sql:"type:text[]"`
+	Actors        []string  `gorm:"column:actors"         db:"actors"         sql:"type:text[]"`
 	Description   string    `gorm:"column:description"    db:"description"    sql:"type:text"`
 	Age           string    `gorm:"column:age"            db:"age"            sql:"type:text"`
 	ReleaseDate   string    `gorm:"column:release_date"   db:"release_date"   sql:"type:text"`
@@ -233,7 +235,7 @@ func (n *NCp) ParseTopic(topic Topic, debug bool) (Film, error) {
 		return film, err
 	}
 	topic.Body = body
-	film.Country = topic.getCountry()
+	film.Country, film.RawCountry = topic.getCountry()
 	film.Genre = topic.getGenre()
 	film.Director = topic.getDirector()
 	film.Producer = topic.getProducer()
@@ -325,4 +327,16 @@ func removeTag(body []byte, tag string) []byte {
 		body = bytes.Replace(body, item[0], item[1], 1)
 	}
 	return body
+}
+
+func stringToStruct(in string) []string {
+	var out []string
+	itemsArray := strings.Split(in, ",")
+	for _, item := range itemsArray {
+		trimItem := strings.Trim(item, " ")
+		if item != "" {
+			out = append(out, trimItem)
+		}
+	}
+	return out
 }
