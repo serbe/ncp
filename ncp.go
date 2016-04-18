@@ -76,7 +76,7 @@ type Film struct {
 	RawCountry    string
 	Director      []string
 	Producer      []string
-	Actors        []string
+	Actor         []string
 	Description   string
 	Age           string
 	ReleaseDate   string
@@ -232,7 +232,7 @@ func (n *NCp) ParseTopic(topic Topic, debug bool) (Film, error) {
 	film.Genre = topic.getGenre()
 	film.Director = topic.getDirector()
 	film.Producer = topic.getProducer()
-	film.Actors = topic.getActors()
+	film.Actor = topic.getActor()
 	film.Description = topic.getDescription()
 	film.Age = topic.getAge()
 	film.ReleaseDate = topic.getReleaseDate()

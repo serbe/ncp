@@ -195,18 +195,18 @@ func (t *Topic) getProducer() []string {
 	return producer
 }
 
-func (t *Topic) getActors() []string {
+func (t *Topic) getActor() []string {
 	var (
-		reActors = regexp.MustCompile(`<span style="font-weight: bold">Актеры:\s*<\/span>(.+?)<`)
-		actors   []string
+		reActor = regexp.MustCompile(`<span style="font-weight: bold">Актеры:\s*<\/span>(.+?)<`)
+		actor   []string
 	)
-	if reActors.Match(t.Body) == true {
-		str := string(reActors.FindSubmatch(t.Body)[1])
+	if reActor.Match(t.Body) == true {
+		str := string(reActor.FindSubmatch(t.Body)[1])
 		str = cleanStr(str)
 		str = strings.Trim(str, ".")
-		actors = stringToStruct(str)
+		actor = stringToStruct(str)
 	}
-	return actors
+	return actor
 }
 
 func (t *Topic) getDescription() string {
