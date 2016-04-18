@@ -67,6 +67,7 @@ type Topic struct {
 // Seeders       Количество раздающих
 // Leechers      Количество скачивающих
 type Film struct {
+	Section       string
 	Name          string
 	EngName       string
 	Href          string
@@ -228,6 +229,7 @@ func (n *NCp) ParseTopic(topic Topic, debug bool) (Film, error) {
 		return film, err
 	}
 	topic.Body = body
+	film.Section = topic.getSection()
 	film.Country, film.RawCountry = topic.getCountry()
 	film.Genre = topic.getGenre()
 	film.Director = topic.getDirector()
