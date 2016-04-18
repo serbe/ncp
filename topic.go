@@ -8,7 +8,7 @@ import (
 
 func (t *Topic) getSection() string {
 	var (
-		reSection = regexp.MustCompile(`<a class="maintitle" href="viewforum.php?f=\d+?">(.+?)</a>`)
+		reSection = regexp.MustCompile(`<a href="viewforum.php\?f=\d+?" class="nav">(.+?)</a>`)
 		section   string
 	)
 	if reSection.Match(t.Body) == true {
@@ -77,7 +77,7 @@ func (t *Topic) getMagnet() string {
 
 func (t *Topic) getPoster() string {
 	var (
-		rePos = regexp.MustCompile(`"postImg postImgAligned img-right" title="http:\/\/assets\..*?\/forum\/image\.php\?link=(.+?(?:jpg|jpeg|png))"`)
+		rePos = regexp.MustCompile(`"postImg postImgAligned img-right" title="http:\/\/assets\..+?\/forum\/image\.php\?link=(.+?(?:jpg|jpeg|png))"`)
 		image string
 	)
 	if rePos.Match(t.Body) == true {
