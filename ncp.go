@@ -72,7 +72,7 @@ type Film struct {
 	Name          string
 	EngName       string
 	Href          string
-	Year          int64
+	Year          int
 	Genre         []string
 	Country       []string
 	RawCountry    string
@@ -96,13 +96,13 @@ type Film struct {
 	Kinopoisk     float64
 	IMDb          float64
 	NNM           float64
-	Size          int64
+	Size          int
 	DateCreate    string
 	Torrent       string
 	Magnet        string
 	Poster        string
-	Seeders       int64
-	Leechers      int64
+	Seeders       int
+	Leechers      int
 }
 
 // Init nnmc with login password
@@ -222,8 +222,8 @@ func (n *NCp) ParseTopic(topic Topic, debug bool) (Film, error) {
 	film.EngName = strings.Replace(film.EngName, ":", ": ", -1)
 	film.EngName = strings.Replace(film.EngName, "  ", " ", -1)
 	film.Href = topic.Href
-	if year64, err := strconv.ParseInt(topic.Year, 10, 64); err == nil {
-		film.Year = year64
+	if year, err := strconv.Atoi(topic.Year); err == nil {
+		film.Year = year
 	}
 	body, err := getHTML(n.baseAddress+"/forum/viewtopic.php?t="+film.Href, n, debug)
 	if err != nil {

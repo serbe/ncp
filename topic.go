@@ -31,10 +31,10 @@ func (t *Topic) getRating() float64 {
 	return rating
 }
 
-func (t *Topic) getSize() int64 {
+func (t *Topic) getSize() int {
 	var (
 		reSize = regexp.MustCompile(`Размер блока: \d.+?B"> (\d{1,2},\d{1,2}|\d{3,4}|\d{1,2})\s`)
-		size   int64
+		size   int
 	)
 	if reSize.Match(t.Body) == true {
 		str := string(reSize.FindSubmatch(t.Body)[1])
@@ -43,7 +43,7 @@ func (t *Topic) getSize() int64 {
 			if s64 < 100 {
 				s64 = s64 * 1000
 			}
-			size = int64(s64)
+			size = int(s64)
 		}
 	}
 	return size
@@ -97,26 +97,26 @@ func (t *Topic) getDate() string {
 	return date
 }
 
-func (t *Topic) getSeeds() int64 {
+func (t *Topic) getSeeds() int {
 	var (
 		reSs  = regexp.MustCompile(`<span class="seed">\[ <b>(\d{1,5})\s`)
-		seeds int64
+		seeds int
 	)
 	if reSs.Match(t.Body) == true {
 		ss := reSs.FindSubmatch(t.Body)
-		seeds, _ = strconv.ParseInt(string(ss[1]), 10, 64)
+		seeds, _ = strconv.Atoi(string(ss[1]))
 	}
 	return seeds
 }
 
-func (t *Topic) getLeechs() int64 {
+func (t *Topic) getLeechs() int {
 	var (
 		reLs   = regexp.MustCompile(`<span class="leech">\[ <b>(\d{1,5})\s`)
-		leechs int64
+		leechs int
 	)
 	if reLs.Match(t.Body) == true {
 		ls := reLs.FindSubmatch(t.Body)
-		leechs, _ = strconv.ParseInt(string(ls[1]), 10, 64)
+		leechs, _ = strconv.Atoi(string(ls[1]))
 	}
 	return leechs
 }
