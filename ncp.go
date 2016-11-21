@@ -8,7 +8,6 @@ import (
 	"net/http"
 	"net/http/cookiejar"
 	"net/url"
-	"os"
 	"regexp"
 	"strconv"
 	"strings"
@@ -107,12 +106,18 @@ type Film struct {
 }
 
 // Init nnmc with login password
-func Init(login string, password string, baseAddress string, proxy string) (*NCp, error) {
+func Init(login string, password string, baseAddress string, proxyURL string) (*NCp, error) {
 	client := http.Client{
 		Timeout: time.Duration(5 * time.Second),
 	}
-	if proxy != "" {
-		os.Setenv("HTTP_PROXY", proxy)
+	if proxyURL != "" {
+		proxy, err := url.Parse(proxyURL)
+		if err == nil {
+			client.Transport = &http.Transport{
+				Proxy: http.ProxyURL(proxy),
+				// DisableKeepAlives: true,
+			}
+		}
 	}
 	cookieJar, _ := cookiejar.New(nil)
 	client.Jar = cookieJar
@@ -181,6 +186,7 @@ func (n *NCp) ParseForumTree(href string, debug bool) ([]Topic, error) {
 	var (
 		topics []Topic
 		reTree = regexp.MustCompile(`<a href="viewtopic.php\?t=(\d+).*?"class="topictitle">(.+?)\s\((\d{4})\)\s(.+?)</a>`)
+		// reAttrib = regexp.MustCompile(`\"Seeders\"><b>(\d*?)<.+?\"Leechers\"><b>(\d*?)<.+?<a href="(.+?)".+?>(.+?)</a`)
 	)
 	body, err := getHTML(n.baseAddress+href, n, debug)
 	if err != nil {
