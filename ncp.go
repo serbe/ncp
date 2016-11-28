@@ -21,6 +21,7 @@ import (
 type NCp struct {
 	client      http.Client
 	baseAddress string
+	debugNet    bool
 }
 
 // Topic from forum
@@ -107,46 +108,41 @@ type Film struct {
 	Leechers      int
 }
 
-func testCookie(login string, client http.Client) bool {
-	resp, err := client.Get("http://nnmclub.to/forum/search.php")
-	if err != nil {
-		return false
-	}
-	defer resp.Body.Close()
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return false
-	}
-	return bytes.Contains(body, []byte(login))
-}
-
 // Init nnmc with login password
-func Init(login string, password string, baseAddress string, proxyURL string) (*NCp, error) {
-	client := http.Client{
-		Timeout: time.Duration(5 * time.Second),
+func Init(login string, password string, baseAddress string, proxyURL string, debug bool) (nc *NCp, err error) {
+	nc = new(NCp)
+	nc.debugNet = debug
+	nc.baseAddress = baseAddress
+	nc.client = http.Client{
+		Timeout: time.Duration(10 * time.Second),
 	}
 	if proxyURL != "" {
 		proxy, err := url.Parse(proxyURL)
 		if err == nil {
-			client.Transport = &http.Transport{
+			nc.client.Transport = &http.Transport{
 				Proxy: http.ProxyURL(proxy),
 				// DisableKeepAlives: true,
 			}
 		}
 	}
 	cookieJar, _ := cookiejar.New(nil)
-	client.Jar = cookieJar
+	nc.client.Jar = cookieJar
 
 	var cooks = new([]*http.Cookie)
-	err := load("acc.gb", cooks)
+	err = load("acc.gb", cooks)
 	if err == nil {
+		var body []byte
 		u, _ := url.Parse(baseAddress + "/forum/")
-		client.Jar.SetCookies(u, *cooks)
-		if !testCookie(login, client) {
-			err = fmt.Errorf("Wrong cookies")
+		nc.client.Jar.SetCookies(u, *cooks)
+		body, err = getHTML("http://nnmclub.to/forum/search.php", nc)
+		if err == nil {
+			if !bytes.ContainsAny(body, login) {
+				err = fmt.Errorf("Wrong cookies")
+			}
 		}
 	}
 	if err != nil {
+		fmt.Println(err)
 		urlPost := baseAddress + "/forum/login.php"
 		form := url.Values{}
 		form.Set("username", login)
@@ -156,18 +152,23 @@ func Init(login string, password string, baseAddress string, proxyURL string) (*
 		req, _ := http.NewRequest("POST", urlPost, bytes.NewBufferString(form.Encode()))
 		req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
 		req.Header.Add("Content-Length", strconv.Itoa(len(form.Encode())))
-		_, err := client.Do(req)
+		_, err = nc.client.Do(req)
 		if err != nil {
 			return nil, err
 		}
 		u, _ := url.Parse(baseAddress + "/forum/")
-		err = save("acc.gb", client.Jar.Cookies(u))
+		err = save("acc.gb", nc.client.Jar.Cookies(u))
 	}
-	return &NCp{client: client, baseAddress: baseAddress}, err
+	return nc, err
 }
 
 // getHTML get body from href
-func getHTML(href string, n *NCp, debug bool) ([]byte, error) {
+func getHTML(href string, n *NCp) ([]byte, error) {
+	time.Sleep(500 * time.Millisecond)
+	u, err := url.Parse(href)
+	if err != nil {
+		return nil, err
+	}
 	resp, err := n.client.Get(href)
 	if err != nil {
 		log.Println("client Get error:", err)
@@ -193,20 +194,23 @@ func getHTML(href string, n *NCp, debug bool) ([]byte, error) {
 	doc = removeTag(doc, `<span style="text-decoration:.+?">(.+?)</span>`)
 	doc = removeTag(doc, `<span style="color:.+?">(.+?)</span>`)
 
-	if debug == true {
-		u, err := url.Parse(href)
-		if err == nil {
-			q := u.Query()
-			t := q.Get("t")
-			f := q.Get("f")
-			if t != "" {
-				ioutil.WriteFile(t+".html", doc, 0600)
+	if n.debugNet {
+		if href == n.baseAddress+"/forum/search.php" {
+			ioutil.WriteFile("search.html", doc, 0600)
+		}
+		if href == n.baseAddress+"/forum/login.php" {
+			ioutil.WriteFile("login.html", doc, 0600)
+		}
+		q := u.Query()
+		t := q.Get("t")
+		f := q.Get("f")
+		if t != "" {
+			ioutil.WriteFile(t+".html", doc, 0600)
+		} else {
+			if f != "" {
+				ioutil.WriteFile(f+".html", doc, 0600)
 			} else {
-				if f != "" {
-					ioutil.WriteFile(f+".html", doc, 0600)
-				} else {
-					ioutil.WriteFile(u.Path+".html", doc, 0600)
-				}
+				ioutil.WriteFile(u.Path+".html", doc, 0600)
 			}
 		}
 	}
@@ -220,7 +224,7 @@ func (n *NCp) ParseForumTree(href string, debug bool) ([]Topic, error) {
 		reTree = regexp.MustCompile(`<a href="viewtopic.php\?t=(\d+).*?"class="topictitle">(.+?)\s\((\d{4})\)\s(.+?)</a>`)
 		// reAttrib = regexp.MustCompile(`\"Seeders\"><b>(\d*?)<.+?\"Leechers\"><b>(\d*?)<.+?<a href="(.+?)".+?>(.+?)</a`)
 	)
-	body, err := getHTML(n.baseAddress+href, n, debug)
+	body, err := getHTML(n.baseAddress+href, n)
 	if err != nil {
 		return topics, err
 	}
@@ -266,7 +270,7 @@ func (n *NCp) ParseTopic(topic Topic, debug bool) (Film, error) {
 	if year, err := strconv.Atoi(topic.Year); err == nil {
 		film.Year = year
 	}
-	body, err := getHTML(n.baseAddress+"/forum/viewtopic.php?t="+film.Href, n, debug)
+	body, err := getHTML(n.baseAddress+"/forum/viewtopic.php?t="+film.Href, n)
 	if err != nil {
 		return film, err
 	}
@@ -391,6 +395,9 @@ func save(path string, object interface{}) error {
 
 // Decode Gob file
 func load(path string, object interface{}) error {
+	if !existsFile(path) {
+		return fmt.Errorf("File not exist")
+	}
 	file, err := os.Open(path)
 	if err == nil {
 		decoder := gob.NewDecoder(file)
@@ -398,4 +405,15 @@ func load(path string, object interface{}) error {
 	}
 	file.Close()
 	return err
+}
+
+func existsFile(file string) bool {
+	_, err := os.Stat(file)
+	if err == nil {
+		return true
+	}
+	if os.IsNotExist(err) {
+		return false
+	}
+	return true
 }

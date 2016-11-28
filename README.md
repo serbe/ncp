@@ -1,5 +1,5 @@
 # ncp
-Parser nnm-club forum for get films info
+Parser nnm club forum for get films info
 
 # install
 go get github.com/serbe/ncp
