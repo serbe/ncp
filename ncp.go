@@ -2,12 +2,14 @@ package ncp
 
 import (
 	"bytes"
+	"encoding/gob"
 	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
 	"net/http/cookiejar"
 	"net/url"
+	"os"
 	"regexp"
 	"strconv"
 	"strings"
@@ -105,6 +107,19 @@ type Film struct {
 	Leechers      int
 }
 
+func testCookie(login string, client http.Client) bool {
+	resp, err := client.Get("http://nnmclub.to/forum/search.php")
+	if err != nil {
+		return false
+	}
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return false
+	}
+	return bytes.Contains(body, []byte(login))
+}
+
 // Init nnmc with login password
 func Init(login string, password string, baseAddress string, proxyURL string) (*NCp, error) {
 	client := http.Client{
@@ -121,16 +136,33 @@ func Init(login string, password string, baseAddress string, proxyURL string) (*
 	}
 	cookieJar, _ := cookiejar.New(nil)
 	client.Jar = cookieJar
-	urlPost := baseAddress + "/forum/login.php"
-	form := url.Values{}
-	form.Set("username", login)
-	form.Add("password", password)
-	form.Add("redirect", "")
-	form.Add("login", "âõîä")
-	req, _ := http.NewRequest("POST", urlPost, bytes.NewBufferString(form.Encode()))
-	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
-	req.Header.Add("Content-Length", strconv.Itoa(len(form.Encode())))
-	_, err := client.Do(req)
+
+	var cooks = new([]*http.Cookie)
+	err := load("acc.gb", cooks)
+	if err == nil {
+		u, _ := url.Parse(baseAddress + "/forum/")
+		client.Jar.SetCookies(u, *cooks)
+		if !testCookie(login, client) {
+			err = fmt.Errorf("Wrong cookies")
+		}
+	}
+	if err != nil {
+		urlPost := baseAddress + "/forum/login.php"
+		form := url.Values{}
+		form.Set("username", login)
+		form.Add("password", password)
+		form.Add("redirect", "")
+		form.Add("login", "âõîä")
+		req, _ := http.NewRequest("POST", urlPost, bytes.NewBufferString(form.Encode()))
+		req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
+		req.Header.Add("Content-Length", strconv.Itoa(len(form.Encode())))
+		_, err := client.Do(req)
+		if err != nil {
+			return nil, err
+		}
+		u, _ := url.Parse(baseAddress + "/forum/")
+		err = save("acc.gb", client.Jar.Cookies(u))
+	}
 	return &NCp{client: client, baseAddress: baseAddress}, err
 }
 
@@ -344,4 +376,26 @@ func stringToStruct(in string) []string {
 		}
 	}
 	return out
+}
+
+// Encode via Gob to file
+func save(path string, object interface{}) error {
+	file, err := os.Create(path)
+	if err == nil {
+		encoder := gob.NewEncoder(file)
+		encoder.Encode(object)
+	}
+	file.Close()
+	return err
+}
+
+// Decode Gob file
+func load(path string, object interface{}) error {
+	file, err := os.Open(path)
+	if err == nil {
+		decoder := gob.NewDecoder(file)
+		err = decoder.Decode(object)
+	}
+	file.Close()
+	return err
 }
