@@ -218,7 +218,7 @@ func getHTML(href string, n *NCp) ([]byte, error) {
 }
 
 // ParseForumTree get topics from forumTree
-func (n *NCp) ParseForumTree(href string, debug bool) ([]Topic, error) {
+func (n *NCp) ParseForumTree(href string) ([]Topic, error) {
 	var (
 		topics []Topic
 		reTree = regexp.MustCompile(`<a href="viewtopic.php\?t=(\d+).*?"class="topictitle">(.+?)\s\((\d{4})\)\s(.+?)</a>`)
@@ -244,7 +244,7 @@ func (n *NCp) ParseForumTree(href string, debug bool) ([]Topic, error) {
 }
 
 // ParseTopic get film from topic
-func (n *NCp) ParseTopic(topic Topic, debug bool) (Film, error) {
+func (n *NCp) ParseTopic(topic Topic) (Film, error) {
 	var (
 		film Film
 	)
