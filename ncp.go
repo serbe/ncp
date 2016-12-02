@@ -26,11 +26,13 @@ type NCp struct {
 
 // Topic from forum
 type Topic struct {
-	Href    string
-	Name    string
-	Year    string
-	Quality string
-	Body    []byte
+	Href     string
+	Name     string
+	Year     string
+	Quality  string
+	Seeders  int
+	Leechers int
+	Body     []byte
 }
 
 // Film all values
@@ -220,9 +222,9 @@ func getHTML(href string, n *NCp) ([]byte, error) {
 // ParseForumTree get topics from forumTree
 func (n *NCp) ParseForumTree(href string) ([]Topic, error) {
 	var (
-		topics []Topic
-		reTree = regexp.MustCompile(`<a href="viewtopic.php\?t=(\d+).*?"class="topictitle">(.+?)\s\((\d{4})\)\s(.+?)</a>`)
-		// reAttrib = regexp.MustCompile(`\"Seeders\"><b>(\d*?)<.+?\"Leechers\"><b>(\d*?)<.+?<a href="(.+?)".+?>(.+?)</a`)
+		topics   []Topic
+		reTree   = regexp.MustCompile(`<a href="viewtopic.php\?t=(\d+).*?"class="topictitle">(.+?)\s\((\d{4})\)\s(.+?)</a>`)
+		reAttrib = regexp.MustCompile(`\"Seeders\"><b>(\d*?)<.+?\"Leechers\"><b>(\d*?)<.+?<a href="(.+?)".+?>(.+?)</a`)
 	)
 	body, err := getHTML(n.baseAddress+href, n)
 	if err != nil {
@@ -232,12 +234,15 @@ func (n *NCp) ParseForumTree(href string) ([]Topic, error) {
 		return topics, fmt.Errorf("No topic in body")
 	}
 	findResult := reTree.FindAllSubmatch(body, -1)
-	for _, v := range findResult {
+	findAttrib := reAttrib.FindAllSubmatch(body, -1)
+	for i, v := range findResult {
 		var t Topic
 		t.Href = string(v[1])
 		t.Name = string(v[2])
 		t.Year = string(v[3])
 		t.Quality = string(v[4])
+		t.Seeders, _ = strconv.Atoi(string(findAttrib[i][1]))
+		t.Leechers, _ = strconv.Atoi(string(findAttrib[i][2]))
 		topics = append(topics, t)
 	}
 	return topics, nil
