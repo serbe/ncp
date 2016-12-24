@@ -16,9 +16,9 @@ import (
 	"time"
 )
 
-// NCp values:
+// NC values:
 // client http.Client with cookie
-type NCp struct {
+type NC struct {
 	client      http.Client
 	baseAddress string
 	debugNet    bool
@@ -111,32 +111,32 @@ type Film struct {
 }
 
 // Init nnmc with login password
-func Init(login string, password string, baseAddress string, proxyURL string, debug bool) (nc *NCp, err error) {
-	nc = new(NCp)
-	nc.debugNet = debug
-	nc.baseAddress = baseAddress
-	nc.client = http.Client{
+func Init(login string, password string, baseAddress string, proxyURL string, debug bool) (*NC, error) {
+	n := new(NC)
+	n.debugNet = debug
+	n.baseAddress = baseAddress
+	n.client = http.Client{
 		Timeout: time.Duration(10 * time.Second),
 	}
 	if proxyURL != "" {
 		proxy, err := url.Parse(proxyURL)
 		if err == nil {
-			nc.client.Transport = &http.Transport{
+			n.client.Transport = &http.Transport{
 				Proxy: http.ProxyURL(proxy),
 				// DisableKeepAlives: true,
 			}
 		}
 	}
 	cookieJar, _ := cookiejar.New(nil)
-	nc.client.Jar = cookieJar
+	n.client.Jar = cookieJar
 
 	var cooks = new([]*http.Cookie)
-	err = load("acc.gb", cooks)
+	err := load("acc.gb", cooks)
 	if err == nil {
 		var body []byte
 		u, _ := url.Parse(baseAddress + "/forum/")
-		nc.client.Jar.SetCookies(u, *cooks)
-		body, err = getHTML("http://nnmclub.to/forum/search.php", nc)
+		n.client.Jar.SetCookies(u, *cooks)
+		body, err = getHTML("http://nnmclub.to/forum/search.php", n)
 		if err == nil {
 			if !bytes.ContainsAny(body, login) {
 				err = fmt.Errorf("Wrong cookies")
@@ -154,18 +154,18 @@ func Init(login string, password string, baseAddress string, proxyURL string, de
 		req, _ := http.NewRequest("POST", urlPost, bytes.NewBufferString(form.Encode()))
 		req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
 		req.Header.Add("Content-Length", strconv.Itoa(len(form.Encode())))
-		_, err = nc.client.Do(req)
+		_, err = n.client.Do(req)
 		if err != nil {
 			return nil, err
 		}
 		u, _ := url.Parse(baseAddress + "/forum/")
-		err = save("acc.gb", nc.client.Jar.Cookies(u))
+		err = save("acc.gb", n.client.Jar.Cookies(u))
 	}
-	return nc, err
+	return n, err
 }
 
 // getHTML get body from href
-func getHTML(href string, n *NCp) ([]byte, error) {
+func getHTML(href string, n *NC) ([]byte, error) {
 	time.Sleep(500 * time.Millisecond)
 	u, err := url.Parse(href)
 	if err != nil {
@@ -220,10 +220,10 @@ func getHTML(href string, n *NCp) ([]byte, error) {
 }
 
 // ParseForumTree get topics from forumTree
-func (n *NCp) ParseForumTree(href string) ([]Topic, error) {
+func (n *NC) ParseForumTree(href string) ([]Topic, error) {
 	var (
-		topics   []Topic
-		reTree   = regexp.MustCompile(`<a href="viewtopic.php\?t=(\d+).*?"class="topictitle">(.+?)\s\((\d{4})\)\s(.+?)</a>`)
+		topics []Topic
+		reTree = regexp.MustCompile(`<a href="viewtopic.php\?t=(\d+).*?"class="topictitle">(.+?)\s\((\d{4})\)\s(.+?)</a>`)
 		// reAttrib = regexp.MustCompile(`\"Seeders\"><b>(\d*?)<.+?\"Leechers\"><b>(\d*?)<.+?<a href="(.+?)".+?>(.+?)</a`)
 	)
 	body, err := getHTML(n.baseAddress+href, n)
@@ -249,7 +249,7 @@ func (n *NCp) ParseForumTree(href string) ([]Topic, error) {
 }
 
 // ParseTopic get film from topic
-func (n *NCp) ParseTopic(topic Topic) (Film, error) {
+func (n *NC) ParseTopic(topic Topic) (Film, error) {
 	var (
 		film Film
 	)
@@ -359,6 +359,7 @@ func replaceDate(s string) string {
 func cleanStr(str string) string {
 	var reSpan = regexp.MustCompile("<span .*?>")
 	str = reSpan.ReplaceAllString(str, "")
+	str = strings.Replace(str, "</span>", "", -1)
 	str = strings.Trim(str, " ")
 	return str
 }
@@ -379,7 +380,7 @@ func stringToStruct(in string) []string {
 	var out []string
 	itemsArray := strings.Split(in, ",")
 	for _, item := range itemsArray {
-		trimItem := strings.Trim(item, " ")
+		trimItem := strings.Trim(item, "\" ")
 		if item != "" {
 			out = append(out, trimItem)
 		}
