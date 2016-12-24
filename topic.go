@@ -20,7 +20,7 @@ func (t *Topic) getSection() string {
 
 func (t *Topic) getRating() float64 {
 	var (
-		reRating = regexp.MustCompile(`>(\d,\d|\d)<\/span>.+?\(Голосов:`)
+		reRating = regexp.MustCompile(`>(\d,\d|\d)</span>.+?\(Голосов:`)
 		rating   float64
 	)
 	if reRating.Match(t.Body) == true {
@@ -77,7 +77,7 @@ func (t *Topic) getMagnet() string {
 
 func (t *Topic) getPoster() string {
 	var (
-		rePos = regexp.MustCompile(`"postImg postImgAligned img-right" title="http:\/\/assets\..+?\/forum\/image\.php\?link=(.+?(?:jpg|jpeg|png))"`)
+		rePos = regexp.MustCompile(`"postImg postImgAligned img-right" title="http://assets\..+?/forum/image\.php\?link=(.+?(?:jpg|jpeg|png))"`)
 		image string
 	)
 	if rePos.Match(t.Body) == true {
@@ -134,7 +134,7 @@ func getResolution(str string) string {
 
 func (t *Topic) getCountry() ([]string, string) {
 	var (
-		reCountry  = regexp.MustCompile(`<span style="font-weight: bold">Производство:\s*<\/span>(.+?)<`)
+		reCountry  = regexp.MustCompile(`<span style="font-weight: bold">Производство:\s*</span>(.+?)<`)
 		rawCountry string
 		country    []string
 	)
@@ -155,7 +155,7 @@ func (t *Topic) getCountry() ([]string, string) {
 
 func (t *Topic) getGenre() []string {
 	var (
-		reGenre = regexp.MustCompile(`<span style="font-weight: bold">Жанр:\s*<\/span>(.+?)<`)
+		reGenre = regexp.MustCompile(`<span style="font-weight: bold">Жанр:\s*</span>(.+?)<`)
 		genre   []string
 	)
 	if reGenre.Match(t.Body) == true {
@@ -169,7 +169,7 @@ func (t *Topic) getGenre() []string {
 
 func (t *Topic) getDirector() []string {
 	var (
-		reDirector = regexp.MustCompile(`<span style="font-weight: bold">Режиссер:\s*<\/span>(.+?)<`)
+		reDirector = regexp.MustCompile(`<span style="font-weight: bold">Режиссер:\s*</span>(.+?)<`)
 		director   []string
 	)
 	if reDirector.Match(t.Body) == true {
@@ -183,7 +183,7 @@ func (t *Topic) getDirector() []string {
 
 func (t *Topic) getProducer() []string {
 	var (
-		reProducer = regexp.MustCompile(`<span style="font-weight: bold">Продюсер:\s*<\/span>(.+?)<`)
+		reProducer = regexp.MustCompile(`<span style="font-weight: bold">Продюсер:\s*</span>(.+?)<`)
 		producer   []string
 	)
 	if reProducer.Match(t.Body) == true {
@@ -197,7 +197,7 @@ func (t *Topic) getProducer() []string {
 
 func (t *Topic) getActor() []string {
 	var (
-		reActor = regexp.MustCompile(`<span style="font-weight: bold">Актеры:\s*<\/span>(.+?)<`)
+		reActor = regexp.MustCompile(`<span style="font-weight: bold">Актеры:\s*</span>(.+?)<`)
 		actor   []string
 	)
 	if reActor.Match(t.Body) == true {
@@ -211,7 +211,7 @@ func (t *Topic) getActor() []string {
 
 func (t *Topic) getDescription() string {
 	var (
-		reDescription = regexp.MustCompile(`<span style="font-weight: bold">(?:Описание фильма|Описание):\s*<\/span>(.+?)<`)
+		reDescription = regexp.MustCompile(`<span style="font-weight: bold">(?:Описание фильма|Описание):\s*</span>(.+?)<`)
 		description   string
 	)
 	if reDescription.Match(t.Body) == true {
@@ -223,7 +223,7 @@ func (t *Topic) getDescription() string {
 
 func (t *Topic) getAge() string {
 	var (
-		reAge = regexp.MustCompile(`<span style="font-weight: bold">Возраст:\s*<\/span>(.+?)<`)
+		reAge = regexp.MustCompile(`<span style="font-weight: bold">Возраст:\s*</span>(.+?)<`)
 		age   string
 	)
 	if reAge.Match(t.Body) == true {
@@ -235,7 +235,7 @@ func (t *Topic) getAge() string {
 
 func (t *Topic) getReleaseDate() string {
 	var (
-		reReleaseDate = regexp.MustCompile(`<span style="font-weight: bold">Дата мировой премьеры:\s*<\/span>(.+?)<`)
+		reReleaseDate = regexp.MustCompile(`<span style="font-weight: bold">Дата мировой премьеры:\s*</span>(.+?)<`)
 		releaseDate   string
 	)
 	if reReleaseDate.Match(t.Body) == true {
@@ -248,7 +248,7 @@ func (t *Topic) getReleaseDate() string {
 
 func (t *Topic) getRussianDate() string {
 	var (
-		reRussianDate = regexp.MustCompile(`<span style="font-weight: bold">(?:Дата премьеры в России|Дата Российской премьеры|Дата российской премьеры):\s*<\/span>(.+?)<`)
+		reRussianDate = regexp.MustCompile(`<span style="font-weight: bold">(?:Дата премьеры в России|Дата Российской премьеры|Дата российской премьеры):\s*</span>(.+?)<`)
 		russianDate   string
 	)
 	if reRussianDate.Match(t.Body) == true {
@@ -261,7 +261,7 @@ func (t *Topic) getRussianDate() string {
 
 func (t *Topic) getDuration() string {
 	var (
-		reDuration = regexp.MustCompile(`<span style="font-weight: bold">Продолжительность:\s*<\/span>(.+?)<`)
+		reDuration = regexp.MustCompile(`<span style="font-weight: bold">Продолжительность:\s*</span>(.+?)<`)
 		duration   string
 	)
 	if reDuration.Match(t.Body) == true {
@@ -290,7 +290,7 @@ func (t *Topic) getDuration() string {
 
 func (t *Topic) getQuality() string {
 	var (
-		reQuality = regexp.MustCompile(`<span style="font-weight: bold">(?:Качество видео|Качество):\s*<\/span>(.+?)<`)
+		reQuality = regexp.MustCompile(`<span style="font-weight: bold">(?:Качество видео|Качество):\s*</span>(.+?)<`)
 		quality   string
 	)
 	if reQuality.Match(t.Body) == true {
@@ -302,7 +302,7 @@ func (t *Topic) getQuality() string {
 
 func (t *Topic) getTranslation() string {
 	var (
-		reTranslation = regexp.MustCompile(`<span style="font-weight: bold">Перевод:\s*<\/span>(.+?)<`)
+		reTranslation = regexp.MustCompile(`<span style="font-weight: bold">Перевод:\s*</span>(.+?)<`)
 		translation   string
 	)
 	translation = "Не требуется"
@@ -315,7 +315,7 @@ func (t *Topic) getTranslation() string {
 
 func (t *Topic) getSubtitlesType() string {
 	var (
-		reSubtitlesType = regexp.MustCompile(`<span style="font-weight: bold">Вид субтитров:\s*<\/span>(.+?)<`)
+		reSubtitlesType = regexp.MustCompile(`<span style="font-weight: bold">Вид субтитров:\s*</span>(.+?)<`)
 		subtitlesType   string
 	)
 	if reSubtitlesType.Match(t.Body) == true {
@@ -327,7 +327,7 @@ func (t *Topic) getSubtitlesType() string {
 
 func (t *Topic) getSubtitles() string {
 	var (
-		reSubtitles = regexp.MustCompile(`<span style="font-weight: bold">Субтитры:\s*<\/span>(.+?)<`)
+		reSubtitles = regexp.MustCompile(`<span style="font-weight: bold">Субтитры:\s*</span>(.+?)<`)
 		subtitles   string
 	)
 	if reSubtitles.Match(t.Body) == true {
@@ -339,7 +339,7 @@ func (t *Topic) getSubtitles() string {
 
 func (t *Topic) getVideo() string {
 	var (
-		reVideo = regexp.MustCompile(`<span style="font-weight: bold">Видео:\s*<\/span>(.+?)<`)
+		reVideo = regexp.MustCompile(`<span style="font-weight: bold">Видео:\s*</span>(.+?)<`)
 		video   string
 	)
 	if reVideo.Match(t.Body) == true {
@@ -351,7 +351,7 @@ func (t *Topic) getVideo() string {
 
 func (t *Topic) getAudio1() string {
 	var (
-		reAudio = regexp.MustCompile(`<span style="font-weight: bold">(?:Аудио\s?:\s*|Аудио\s?.?1.?:\s*)<\/span>(.+?)<`)
+		reAudio = regexp.MustCompile(`<span style="font-weight: bold">(?:Аудио\s?:\s*|Аудио\s?.?1.?:\s*)</span>(.+?)<`)
 		audio   string
 	)
 	if reAudio.Match(t.Body) == true {
@@ -363,7 +363,7 @@ func (t *Topic) getAudio1() string {
 
 func (t *Topic) getAudio2() string {
 	var (
-		reAudio = regexp.MustCompile(`<span style="font-weight: bold">Аудио\s?.?2.?:\s*<\/span>(.+?)<`)
+		reAudio = regexp.MustCompile(`<span style="font-weight: bold">Аудио\s?.?2.?:\s*</span>(.+?)<`)
 		audio   string
 	)
 	if reAudio.Match(t.Body) == true {
@@ -375,7 +375,7 @@ func (t *Topic) getAudio2() string {
 
 func (t *Topic) getAudio3() string {
 	var (
-		reAudio = regexp.MustCompile(`<span style="font-weight: bold">Аудио\s?.?3.?:\s*<\/span>(.+?)<`)
+		reAudio = regexp.MustCompile(`<span style="font-weight: bold">Аудио\s?.?3.?:\s*</span>(.+?)<`)
 		audio   string
 	)
 	if reAudio.Match(t.Body) == true {
