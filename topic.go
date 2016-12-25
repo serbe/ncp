@@ -134,7 +134,7 @@ func getResolution(str string) string {
 
 func (t *Topic) getCountry() ([]string, string) {
 	var (
-		reCountry  = regexp.MustCompile(`<span style="font-weight: bold">Производство:\s*</span>(.+?)<`)
+		reCountry  = regexp.MustCompile(`<span style="font-weight: bold">(?:Производство|Страна):\s*</span>(.+?)<`)
 		rawCountry string
 		country    []string
 	)
@@ -145,7 +145,7 @@ func (t *Topic) getCountry() ([]string, string) {
 	lowerRawCountry := strings.ToLower(rawCountry)
 	for _, item := range counriesList {
 		i := strings.Index(lowerRawCountry, strings.ToLower(item))
-		if i != -1 {
+		if i != -1 && item != "" {
 			country = append(country, item)
 			lowerRawCountry = lowerRawCountry[:i] + lowerRawCountry[i+len(item):]
 		}
