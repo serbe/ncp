@@ -211,7 +211,7 @@ func (t *Topic) getActor() []string {
 
 func (t *Topic) getDescription() string {
 	var (
-		reDescription = regexp.MustCompile(`<span style="font-weight: bold">(?:Описание фильма|Описание):\s*</span>(.+?)<`)
+		reDescription = regexp.MustCompile(`<span style="font-weight: bold">(?:Описание фильма|Описание мультфильма|Описание|О фильме):\s*</span>(.+?)<`)
 		description   string
 	)
 	if reDescription.Match(t.Body) == true {
