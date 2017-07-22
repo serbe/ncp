@@ -11,7 +11,7 @@ func (t *Topic) getSection() string {
 		reSection = regexp.MustCompile(`<a href="viewforum.php\?f=\d+?" class="nav">(.+?)</a>`)
 		section   string
 	)
-	if reSection.Match(t.Body) == true {
+	if reSection.Match(t.Body) {
 		section = string(reSection.FindSubmatch(t.Body)[1])
 		section = cleanStr(section)
 	}
@@ -23,7 +23,7 @@ func (t *Topic) getRating() float64 {
 		reRating = regexp.MustCompile(`>(\d,\d|\d)</span>.+?\(Голосов:`)
 		rating   float64
 	)
-	if reRating.Match(t.Body) == true {
+	if reRating.Match(t.Body) {
 		str := string(reRating.FindSubmatch(t.Body)[1])
 		str = strings.Replace(str, ",", ".", -1)
 		rating, _ = strconv.ParseFloat(str, 64)
@@ -36,7 +36,7 @@ func (t *Topic) getSize() int {
 		reSize = regexp.MustCompile(`Размер блока: \d.+?B"> (\d{1,2},\d{1,2}|\d{3,4}|\d{1,2})\s`)
 		size   int
 	)
-	if reSize.Match(t.Body) == true {
+	if reSize.Match(t.Body) {
 		str := string(reSize.FindSubmatch(t.Body)[1])
 		str = strings.Replace(str, ",", ".", -1)
 		if s64, err := strconv.ParseFloat(str, 64); err == nil {
@@ -54,7 +54,7 @@ func (t *Topic) getTorrent() string {
 		reTor   = regexp.MustCompile(`<a href="download\.php\?id=(\d{5,7})" rel="nofollow">Скачать<`)
 		torrent string
 	)
-	if reTor.Match(t.Body) == true {
+	if reTor.Match(t.Body) {
 		findTor := reTor.FindSubmatch(t.Body)
 		torrent = string(findTor[1])
 		// http://nnm-club.me/forum/download.php?id=
@@ -67,7 +67,7 @@ func (t *Topic) getMagnet() string {
 		reMag  = regexp.MustCompile(`href="magnet:\?xt=urn:btih:(.+?)(?:"|&)`)
 		magnet string
 	)
-	if reMag.Match(t.Body) == true {
+	if reMag.Match(t.Body) {
 		findMag := reMag.FindSubmatch(t.Body)
 		magnet = string(findMag[1])
 		// magnet:?xt=urn:btih:
@@ -80,7 +80,7 @@ func (t *Topic) getPoster() string {
 		rePos = regexp.MustCompile(`"postImg postImgAligned img-right" title="http://assets\..+?/forum/image\.php\?link=(.+?(?:jpg|jpeg|png))"`)
 		image string
 	)
-	if rePos.Match(t.Body) == true {
+	if rePos.Match(t.Body) {
 		image = string(rePos.FindSubmatch(t.Body)[1])
 	}
 	return image
@@ -91,7 +91,7 @@ func (t *Topic) getDate() string {
 		reDate = regexp.MustCompile(`> (\d{1,2} .{3} \d{4}).{9}<`)
 		date   string
 	)
-	if reDate.Match(t.Body) == true {
+	if reDate.Match(t.Body) {
 		date = replaceDate(string(reDate.FindSubmatch(t.Body)[1]))
 	}
 	return date
@@ -102,7 +102,7 @@ func (t *Topic) getSeeds() int {
 		reSs  = regexp.MustCompile(`<span class="seed">\[ <b>(\d{1,5})\s`)
 		seeds int
 	)
-	if reSs.Match(t.Body) == true {
+	if reSs.Match(t.Body) {
 		ss := reSs.FindSubmatch(t.Body)
 		seeds, _ = strconv.Atoi(string(ss[1]))
 	}
@@ -114,7 +114,7 @@ func (t *Topic) getLeechs() int {
 		reLs   = regexp.MustCompile(`<span class="leech">\[ <b>(\d{1,5})\s`)
 		leechs int
 	)
-	if reLs.Match(t.Body) == true {
+	if reLs.Match(t.Body) {
 		ls := reLs.FindSubmatch(t.Body)
 		leechs, _ = strconv.Atoi(string(ls[1]))
 	}
@@ -126,7 +126,7 @@ func getResolution(str string) string {
 		reRes      = regexp.MustCompile(`(\d{3,4}x\d{3,4}|\d{3,4}X\d{3,4}|\d{3,4}х\d{3,4}|\d{3,4}Х\d{3,4})`)
 		resolution string
 	)
-	if reRes.MatchString(str) == true {
+	if reRes.MatchString(str) {
 		resolution = reRes.FindString(str)
 	}
 	return resolution
@@ -138,7 +138,7 @@ func (t *Topic) getCountry() ([]string, string) {
 		rawCountry string
 		country    []string
 	)
-	if reCountry.Match(t.Body) == true {
+	if reCountry.Match(t.Body) {
 		rawCountry = string(reCountry.FindSubmatch(t.Body)[1])
 		rawCountry = cleanStr(rawCountry)
 	}
@@ -158,7 +158,7 @@ func (t *Topic) getGenre() []string {
 		reGenre = regexp.MustCompile(`<span style="font-weight: bold">Жанр:\s*</span>(.+?)<`)
 		genre   []string
 	)
-	if reGenre.Match(t.Body) == true {
+	if reGenre.Match(t.Body) {
 		str := string(reGenre.FindSubmatch(t.Body)[1])
 		str = strings.ToLower(cleanStr(str))
 		str = strings.Trim(str, ".")
@@ -172,7 +172,7 @@ func (t *Topic) getDirector() []string {
 		reDirector = regexp.MustCompile(`<span style="font-weight: bold">Режиссер:\s*</span>(.+?)<`)
 		director   []string
 	)
-	if reDirector.Match(t.Body) == true {
+	if reDirector.Match(t.Body) {
 		str := string(reDirector.FindSubmatch(t.Body)[1])
 		str = cleanStr(str)
 		str = strings.Trim(str, ".")
@@ -186,7 +186,7 @@ func (t *Topic) getProducer() []string {
 		reProducer = regexp.MustCompile(`<span style="font-weight: bold">Продюсер:\s*</span>(.+?)<`)
 		producer   []string
 	)
-	if reProducer.Match(t.Body) == true {
+	if reProducer.Match(t.Body) {
 		str := string(reProducer.FindSubmatch(t.Body)[1])
 		str = cleanStr(str)
 		str = strings.Trim(str, ".")
@@ -200,7 +200,7 @@ func (t *Topic) getActor() []string {
 		reActor = regexp.MustCompile(`<span style="font-weight: bold">Актеры:\s*</span>(.+?)<`)
 		actor   []string
 	)
-	if reActor.Match(t.Body) == true {
+	if reActor.Match(t.Body) {
 		str := string(reActor.FindSubmatch(t.Body)[1])
 		str = cleanStr(str)
 		str = strings.Trim(str, ".")
@@ -214,7 +214,7 @@ func (t *Topic) getDescription() string {
 		reDescription = regexp.MustCompile(`<span style="font-weight: bold">(?:Описание фильма|Описание мультфильма|Описание|О фильме):\s*</span>(.+?)<`)
 		description   string
 	)
-	if reDescription.Match(t.Body) == true {
+	if reDescription.Match(t.Body) {
 		description = string(reDescription.FindSubmatch(t.Body)[1])
 		description = cleanStr(description)
 	}
@@ -226,7 +226,7 @@ func (t *Topic) getAge() string {
 		reAge = regexp.MustCompile(`<span style="font-weight: bold">Возраст:\s*</span>(.+?)<`)
 		age   string
 	)
-	if reAge.Match(t.Body) == true {
+	if reAge.Match(t.Body) {
 		age = string(reAge.FindSubmatch(t.Body)[1])
 		age = cleanStr(age)
 	}
@@ -238,7 +238,7 @@ func (t *Topic) getReleaseDate() string {
 		reReleaseDate = regexp.MustCompile(`<span style="font-weight: bold">Дата мировой премьеры:\s*</span>(.+?)<`)
 		releaseDate   string
 	)
-	if reReleaseDate.Match(t.Body) == true {
+	if reReleaseDate.Match(t.Body) {
 		releaseDate = string(reReleaseDate.FindSubmatch(t.Body)[1])
 		releaseDate = cleanStr(releaseDate)
 		releaseDate = replaceDate(releaseDate)
@@ -251,7 +251,7 @@ func (t *Topic) getRussianDate() string {
 		reRussianDate = regexp.MustCompile(`<span style="font-weight: bold">(?:Дата премьеры в России|Дата Российской премьеры|Дата российской премьеры):\s*</span>(.+?)<`)
 		russianDate   string
 	)
-	if reRussianDate.Match(t.Body) == true {
+	if reRussianDate.Match(t.Body) {
 		russianDate = string(reRussianDate.FindSubmatch(t.Body)[1])
 		russianDate = cleanStr(russianDate)
 		russianDate = replaceDate(russianDate)
@@ -264,12 +264,12 @@ func (t *Topic) getDuration() string {
 		reDuration = regexp.MustCompile(`<span style="font-weight: bold">Продолжительность:\s*</span>(.+?)<`)
 		duration   string
 	)
-	if reDuration.Match(t.Body) == true {
+	if reDuration.Match(t.Body) {
 		duration = string(reDuration.FindSubmatch(t.Body)[1])
 		duration = cleanStr(duration)
 	} else {
 		reDuration = regexp.MustCompile(`\sПродолжительность\s+?&#58; (\d{1,2}) ч\. (\d{1,2}) м\.`)
-		if reDuration.Match(t.Body) == true {
+		if reDuration.Match(t.Body) {
 			submatch := reDuration.FindSubmatch(t.Body)
 			hour := string(submatch[1])
 			minute := string(submatch[2])
@@ -293,7 +293,7 @@ func (t *Topic) getQuality() string {
 		reQuality = regexp.MustCompile(`<span style="font-weight: bold">(?:Качество видео|Качество):\s*</span>(.+?)<`)
 		quality   string
 	)
-	if reQuality.Match(t.Body) == true {
+	if reQuality.Match(t.Body) {
 		quality = string(reQuality.FindSubmatch(t.Body)[1])
 		quality = cleanStr(quality)
 	}
@@ -306,7 +306,7 @@ func (t *Topic) getTranslation() string {
 		translation   string
 	)
 	translation = "Не требуется"
-	if reTranslation.Match(t.Body) == true {
+	if reTranslation.Match(t.Body) {
 		translation = string(reTranslation.FindSubmatch(t.Body)[1])
 		translation = cleanStr(translation)
 	}
@@ -318,7 +318,7 @@ func (t *Topic) getSubtitlesType() string {
 		reSubtitlesType = regexp.MustCompile(`<span style="font-weight: bold">Вид субтитров:\s*</span>(.+?)<`)
 		subtitlesType   string
 	)
-	if reSubtitlesType.Match(t.Body) == true {
+	if reSubtitlesType.Match(t.Body) {
 		subtitlesType = string(reSubtitlesType.FindSubmatch(t.Body)[1])
 		subtitlesType = cleanStr(subtitlesType)
 	}
@@ -330,7 +330,7 @@ func (t *Topic) getSubtitles() string {
 		reSubtitles = regexp.MustCompile(`<span style="font-weight: bold">Субтитры:\s*</span>(.+?)<`)
 		subtitles   string
 	)
-	if reSubtitles.Match(t.Body) == true {
+	if reSubtitles.Match(t.Body) {
 		subtitles = string(reSubtitles.FindSubmatch(t.Body)[1])
 		subtitles = cleanStr(subtitles)
 	}
@@ -342,7 +342,7 @@ func (t *Topic) getVideo() string {
 		reVideo = regexp.MustCompile(`<span style="font-weight: bold">Видео:\s*</span>(.+?)<`)
 		video   string
 	)
-	if reVideo.Match(t.Body) == true {
+	if reVideo.Match(t.Body) {
 		video = string(reVideo.FindSubmatch(t.Body)[1])
 		video = cleanStr(video)
 	}
@@ -354,7 +354,7 @@ func (t *Topic) getAudio1() string {
 		reAudio = regexp.MustCompile(`<span style="font-weight: bold">(?:Аудио\s?:\s*|Аудио\s?.?1.?:\s*)</span>(.+?)<`)
 		audio   string
 	)
-	if reAudio.Match(t.Body) == true {
+	if reAudio.Match(t.Body) {
 		audio = string(reAudio.FindSubmatch(t.Body)[1])
 		audio = cleanStr(audio)
 	}
@@ -366,7 +366,7 @@ func (t *Topic) getAudio2() string {
 		reAudio = regexp.MustCompile(`<span style="font-weight: bold">Аудио\s?.?2.?:\s*</span>(.+?)<`)
 		audio   string
 	)
-	if reAudio.Match(t.Body) == true {
+	if reAudio.Match(t.Body) {
 		audio = string(reAudio.FindSubmatch(t.Body)[1])
 		audio = cleanStr(audio)
 	}
@@ -378,7 +378,7 @@ func (t *Topic) getAudio3() string {
 		reAudio = regexp.MustCompile(`<span style="font-weight: bold">Аудио\s?.?3.?:\s*</span>(.+?)<`)
 		audio   string
 	)
-	if reAudio.Match(t.Body) == true {
+	if reAudio.Match(t.Body) {
 		audio = string(reAudio.FindSubmatch(t.Body)[1])
 		audio = cleanStr(audio)
 	}

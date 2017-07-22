@@ -116,7 +116,7 @@ func Init(login string, password string, baseAddress string, proxyURL string, de
 	n.debugNet = debug
 	n.baseAddress = baseAddress
 	n.client = http.Client{
-		Timeout: time.Duration(10 * time.Second),
+		Timeout: time.Duration(10) * time.Second,
 	}
 	if proxyURL != "" {
 		proxy, err := url.Parse(proxyURL)
@@ -230,7 +230,7 @@ func (n *NC) ParseForumTree(href string) ([]Topic, error) {
 	if err != nil {
 		return topics, err
 	}
-	if reTree.Match(body) == false {
+	if !reTree.Match(body) {
 		return topics, fmt.Errorf("No topic in body")
 	}
 	findResult := reTree.FindAllSubmatch(body, -1)
@@ -313,7 +313,7 @@ func (n *NC) ParseTopic(topic Topic) (Film, error) {
 
 func replaceAll(body []byte, from string, to string) []byte {
 	var reStr = regexp.MustCompile(from)
-	if reStr.Match(body) == false {
+	if !reStr.Match(body) {
 		return body
 	}
 	return reStr.ReplaceAll(body, []byte(to))
@@ -366,7 +366,7 @@ func cleanStr(str string) string {
 
 func removeTag(body []byte, tag string) []byte {
 	var reTag = regexp.MustCompile(tag)
-	if reTag.Match(body) == false {
+	if !reTag.Match(body) {
 		return body
 	}
 	tags := reTag.FindAllSubmatch(body, -1)
