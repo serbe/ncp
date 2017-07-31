@@ -7,24 +7,15 @@ import (
 )
 
 func (t *Topic) getSection() string {
-	var (
-		reSection = regexp.MustCompile(`<a href="viewforum.php\?f=\d+?" class="nav">(.+?)</a>`)
-		section   string
-	)
-	if reSection.Match(t.Body) {
-		section = string(reSection.FindSubmatch(t.Body)[1])
-		section = cleanStr(section)
-	}
-	return section
+	return findStr(t.Body, `<a href="viewforum.php\?f=\d+?" class="nav">(.+?)</a>`)
 }
 
 func (t *Topic) getRating() float64 {
 	var (
-		reRating = regexp.MustCompile(`>(\d,\d|\d)</span>.+?\(Голосов:`)
-		rating   float64
+		str    = findStrNoClean(t.Body, `>(\d,\d|\d)</span>.+?\(Голосов:`)
+		rating float64
 	)
-	if reRating.Match(t.Body) {
-		str := string(reRating.FindSubmatch(t.Body)[1])
+	if str != "" {
 		str = strings.Replace(str, ",", ".", -1)
 		rating, _ = strconv.ParseFloat(str, 64)
 	}
@@ -33,11 +24,10 @@ func (t *Topic) getRating() float64 {
 
 func (t *Topic) getSize() int {
 	var (
-		reSize = regexp.MustCompile(`Размер блока: \d.+?B"> (\d{1,2},\d{1,2}|\d{3,4}|\d{1,2})\s`)
-		size   int
+		str  = findStrNoClean(t.Body, `Размер блока: \d.+?B"> (\d{1,2},\d{1,2}|\d{3,4}|\d{1,2})\s`)
+		size int
 	)
-	if reSize.Match(t.Body) {
-		str := string(reSize.FindSubmatch(t.Body)[1])
+	if str != "" {
 		str = strings.Replace(str, ",", ".", -1)
 		if s64, err := strconv.ParseFloat(str, 64); err == nil {
 			if s64 < 100 {
@@ -50,75 +40,29 @@ func (t *Topic) getSize() int {
 }
 
 func (t *Topic) getTorrent() string {
-	var (
-		reTor   = regexp.MustCompile(`<a href="download\.php\?id=(\d{5,7})" rel="nofollow">Скачать<`)
-		torrent string
-	)
-	if reTor.Match(t.Body) {
-		findTor := reTor.FindSubmatch(t.Body)
-		torrent = string(findTor[1])
-		// http://nnm-club.me/forum/download.php?id=
-	}
-	return torrent
+	return findStr(t.Body, `<a href="download\.php\?id=(\d{5,7})" rel="nofollow">Скачать<`)
+	// http://nnm-club.me/forum/download.php?id=
 }
 
 func (t *Topic) getMagnet() string {
-	var (
-		reMag  = regexp.MustCompile(`href="magnet:\?xt=urn:btih:(.+?)(?:"|&)`)
-		magnet string
-	)
-	if reMag.Match(t.Body) {
-		findMag := reMag.FindSubmatch(t.Body)
-		magnet = string(findMag[1])
-		// magnet:?xt=urn:btih:
-	}
-	return magnet
+	return findStr(t.Body, `href="magnet:\?xt=urn:btih:(.+?)(?:"|&)`)
+	// magnet:?xt=urn:btih:
 }
 
 func (t *Topic) getPoster() string {
-	var (
-		rePos = regexp.MustCompile(`"postImg postImgAligned img-right" title="http://assets\..+?/forum/image\.php\?link=(.+?(?:jpg|jpeg|png))"`)
-		image string
-	)
-	if rePos.Match(t.Body) {
-		image = string(rePos.FindSubmatch(t.Body)[1])
-	}
-	return image
+	return findStrNoClean(t.Body, `"postImg postImgAligned img-right" title="http://assets\..+?/forum/image\.php\?link=(.+?(?:jpg|jpeg|png))"`)
 }
 
 func (t *Topic) getDate() string {
-	var (
-		reDate = regexp.MustCompile(`> (\d{1,2} .{3} \d{4}).{9}<`)
-		date   string
-	)
-	if reDate.Match(t.Body) {
-		date = replaceDate(string(reDate.FindSubmatch(t.Body)[1]))
-	}
-	return date
+	return replaceDate(findStrNoClean(t.Body, `> (\d{1,2} .{3} \d{4}).{9}<`))
 }
 
 func (t *Topic) getSeeds() int {
-	var (
-		reSs  = regexp.MustCompile(`<span class="seed">\[ <b>(\d{1,5})\s`)
-		seeds int
-	)
-	if reSs.Match(t.Body) {
-		ss := reSs.FindSubmatch(t.Body)
-		seeds, _ = strconv.Atoi(string(ss[1]))
-	}
-	return seeds
+	return findInt(t.Body, `<span class="seed">\[ <b>(\d{1,5})\s`)
 }
 
 func (t *Topic) getLeechs() int {
-	var (
-		reLs   = regexp.MustCompile(`<span class="leech">\[ <b>(\d{1,5})\s`)
-		leechs int
-	)
-	if reLs.Match(t.Body) {
-		ls := reLs.FindSubmatch(t.Body)
-		leechs, _ = strconv.Atoi(string(ls[1]))
-	}
-	return leechs
+	return findInt(t.Body, `<span class="leech">\[ <b>(\d{1,5})\s`)
 }
 
 func getResolution(str string) string {
@@ -134,14 +78,9 @@ func getResolution(str string) string {
 
 func (t *Topic) getCountry() ([]string, string) {
 	var (
-		reCountry  = regexp.MustCompile(`<span style="font-weight: bold">(?:Производство|Страна):\s*</span>(.+?)<`)
-		rawCountry string
+		rawCountry = findStr(t.Body, `<span style="font-weight: bold">(?:Производство|Страна):\s*</span>(.+?)<`)
 		country    []string
 	)
-	if reCountry.Match(t.Body) {
-		rawCountry = string(reCountry.FindSubmatch(t.Body)[1])
-		rawCountry = cleanStr(rawCountry)
-	}
 	lowerRawCountry := strings.ToLower(rawCountry)
 	for _, item := range counriesList {
 		i := strings.Index(lowerRawCountry, strings.ToLower(item))
@@ -154,121 +93,45 @@ func (t *Topic) getCountry() ([]string, string) {
 }
 
 func (t *Topic) getGenre() []string {
-	var (
-		reGenre = regexp.MustCompile(`<span style="font-weight: bold">Жанр:\s*</span>(.+?)<`)
-		genre   []string
-	)
-	if reGenre.Match(t.Body) {
-		str := string(reGenre.FindSubmatch(t.Body)[1])
-		str = strings.ToLower(cleanStr(str))
-		str = strings.Trim(str, ".")
-		genre = stringToStruct(str)
-	}
-	return genre
+	return findArrayOfStr(t.Body, `<span style="font-weight: bold">Жанр:\s*</span>(.+?)<`)
 }
 
 func (t *Topic) getDirector() []string {
-	var (
-		reDirector = regexp.MustCompile(`<span style="font-weight: bold">Режиссер:\s*</span>(.+?)<`)
-		director   []string
-	)
-	if reDirector.Match(t.Body) {
-		str := string(reDirector.FindSubmatch(t.Body)[1])
-		str = cleanStr(str)
-		str = strings.Trim(str, ".")
-		director = stringToStruct(str)
-	}
-	return director
+	return findArrayOfStr(t.Body, `<span style="font-weight: bold">Режиссер:\s*</span>(.+?)<`)
 }
 
 func (t *Topic) getProducer() []string {
-	var (
-		reProducer = regexp.MustCompile(`<span style="font-weight: bold">Продюсер:\s*</span>(.+?)<`)
-		producer   []string
-	)
-	if reProducer.Match(t.Body) {
-		str := string(reProducer.FindSubmatch(t.Body)[1])
-		str = cleanStr(str)
-		str = strings.Trim(str, ".")
-		producer = stringToStruct(str)
-	}
-	return producer
+	return findArrayOfStr(t.Body, `<span style="font-weight: bold">Продюсер:\s*</span>(.+?)<`)
 }
 
 func (t *Topic) getActor() []string {
-	var (
-		reActor = regexp.MustCompile(`<span style="font-weight: bold">Актеры:\s*</span>(.+?)<`)
-		actor   []string
-	)
-	if reActor.Match(t.Body) {
-		str := string(reActor.FindSubmatch(t.Body)[1])
-		str = cleanStr(str)
-		str = strings.Trim(str, ".")
-		actor = stringToStruct(str)
-	}
-	return actor
+	return findArrayOfStr(t.Body, `<span style="font-weight: bold">Актеры:\s*</span>(.+?)<`)
 }
 
 func (t *Topic) getDescription() string {
-	var (
-		reDescription = regexp.MustCompile(`<span style="font-weight: bold">(?:Описание фильма|Описание мультфильма|Описание|О фильме):\s*</span>(.+?)<`)
-		description   string
-	)
-	if reDescription.Match(t.Body) {
-		description = string(reDescription.FindSubmatch(t.Body)[1])
-		description = cleanStr(description)
-	}
-	return description
+	return findStr(t.Body, `<span style="font-weight: bold">(?:Описание фильма|Описание мультфильма|Описание|О фильме):\s*</span>(.+?)<`)
 }
 
 func (t *Topic) getAge() string {
-	var (
-		reAge = regexp.MustCompile(`<span style="font-weight: bold">Возраст:\s*</span>(.+?)<`)
-		age   string
-	)
-	if reAge.Match(t.Body) {
-		age = string(reAge.FindSubmatch(t.Body)[1])
-		age = cleanStr(age)
-	}
-	return age
+	return findStr(t.Body, `<span style="font-weight: bold">Возраст:\s*</span>(.+?)<`)
 }
 
 func (t *Topic) getReleaseDate() string {
-	var (
-		reReleaseDate = regexp.MustCompile(`<span style="font-weight: bold">Дата мировой премьеры:\s*</span>(.+?)<`)
-		releaseDate   string
-	)
-	if reReleaseDate.Match(t.Body) {
-		releaseDate = string(reReleaseDate.FindSubmatch(t.Body)[1])
-		releaseDate = cleanStr(releaseDate)
-		releaseDate = replaceDate(releaseDate)
-	}
-	return releaseDate
+	var ret = findStr(t.Body, `<span style="font-weight: bold">Дата мировой премьеры:\s*</span>(.+?)<`)
+	ret = replaceDate(ret)
+	return ret
 }
 
 func (t *Topic) getRussianDate() string {
-	var (
-		reRussianDate = regexp.MustCompile(`<span style="font-weight: bold">(?:Дата премьеры в России|Дата Российской премьеры|Дата российской премьеры):\s*</span>(.+?)<`)
-		russianDate   string
-	)
-	if reRussianDate.Match(t.Body) {
-		russianDate = string(reRussianDate.FindSubmatch(t.Body)[1])
-		russianDate = cleanStr(russianDate)
-		russianDate = replaceDate(russianDate)
-	}
-	return russianDate
+	var ret = findStr(t.Body, `<span style="font-weight: bold">(?:Дата премьеры в России|Дата Российской премьеры|Дата российской премьеры):\s*</span>(.+?)<`)
+	ret = replaceDate(ret)
+	return ret
 }
 
 func (t *Topic) getDuration() string {
-	var (
-		reDuration = regexp.MustCompile(`<span style="font-weight: bold">Продолжительность:\s*</span>(.+?)<`)
-		duration   string
-	)
-	if reDuration.Match(t.Body) {
-		duration = string(reDuration.FindSubmatch(t.Body)[1])
-		duration = cleanStr(duration)
-	} else {
-		reDuration = regexp.MustCompile(`\sПродолжительность\s+?&#58; (\d{1,2}) ч\. (\d{1,2}) м\.`)
+	var duration = findStr(t.Body, `<span style="font-weight: bold">Продолжительность:\s*</span>(.+?)<`)
+	if duration == "" {
+		reDuration := regexp.MustCompile(`\sПродолжительность\s+?&#58; (\d{1,2}) ч\. (\d{1,2}) м\.`)
 		if reDuration.Match(t.Body) {
 			submatch := reDuration.FindSubmatch(t.Body)
 			hour := string(submatch[1])
@@ -289,98 +152,33 @@ func (t *Topic) getDuration() string {
 }
 
 func (t *Topic) getQuality() string {
-	var (
-		reQuality = regexp.MustCompile(`<span style="font-weight: bold">(?:Качество видео|Качество):\s*</span>(.+?)<`)
-		quality   string
-	)
-	if reQuality.Match(t.Body) {
-		quality = string(reQuality.FindSubmatch(t.Body)[1])
-		quality = cleanStr(quality)
-	}
-	return quality
+	return findStr(t.Body, `<span style="font-weight: bold">(?:Качество видео|Качество):\s*</span>(.+?)<`)
 }
 
 func (t *Topic) getTranslation() string {
-	var (
-		reTranslation = regexp.MustCompile(`<span style="font-weight: bold">Перевод:\s*</span>(.+?)<`)
-		translation   string
-	)
-	translation = "Не требуется"
-	if reTranslation.Match(t.Body) {
-		translation = string(reTranslation.FindSubmatch(t.Body)[1])
-		translation = cleanStr(translation)
-	}
-	return translation
+	return findStr(t.Body, `<span style="font-weight: bold">Перевод:\s*</span>(.+?)<`)
 }
 
 func (t *Topic) getSubtitlesType() string {
-	var (
-		reSubtitlesType = regexp.MustCompile(`<span style="font-weight: bold">Вид субтитров:\s*</span>(.+?)<`)
-		subtitlesType   string
-	)
-	if reSubtitlesType.Match(t.Body) {
-		subtitlesType = string(reSubtitlesType.FindSubmatch(t.Body)[1])
-		subtitlesType = cleanStr(subtitlesType)
-	}
-	return subtitlesType
+	return findStr(t.Body, `<span style="font-weight: bold">Вид субтитров:\s*</span>(.+?)<`)
 }
 
 func (t *Topic) getSubtitles() string {
-	var (
-		reSubtitles = regexp.MustCompile(`<span style="font-weight: bold">Субтитры:\s*</span>(.+?)<`)
-		subtitles   string
-	)
-	if reSubtitles.Match(t.Body) {
-		subtitles = string(reSubtitles.FindSubmatch(t.Body)[1])
-		subtitles = cleanStr(subtitles)
-	}
-	return subtitles
+	return findStr(t.Body, `<span style="font-weight: bold">Субтитры:\s*</span>(.+?)<`)
 }
 
 func (t *Topic) getVideo() string {
-	var (
-		reVideo = regexp.MustCompile(`<span style="font-weight: bold">Видео:\s*</span>(.+?)<`)
-		video   string
-	)
-	if reVideo.Match(t.Body) {
-		video = string(reVideo.FindSubmatch(t.Body)[1])
-		video = cleanStr(video)
-	}
-	return video
+	return findStr(t.Body, `<span style="font-weight: bold">Видео:\s*</span>(.+?)<`)
 }
 
 func (t *Topic) getAudio1() string {
-	var (
-		reAudio = regexp.MustCompile(`<span style="font-weight: bold">(?:Аудио\s?:\s*|Аудио\s?.?1.?:\s*)</span>(.+?)<`)
-		audio   string
-	)
-	if reAudio.Match(t.Body) {
-		audio = string(reAudio.FindSubmatch(t.Body)[1])
-		audio = cleanStr(audio)
-	}
-	return audio
+	return findStr(t.Body, `<span style="font-weight: bold">(?:Аудио\s?:\s*|Аудио\s?.?1.?:\s*)</span>(.+?)<`)
 }
 
 func (t *Topic) getAudio2() string {
-	var (
-		reAudio = regexp.MustCompile(`<span style="font-weight: bold">Аудио\s?.?2.?:\s*</span>(.+?)<`)
-		audio   string
-	)
-	if reAudio.Match(t.Body) {
-		audio = string(reAudio.FindSubmatch(t.Body)[1])
-		audio = cleanStr(audio)
-	}
-	return audio
+	return findStr(t.Body, `<span style="font-weight: bold">Аудио\s?.?2.?:\s*</span>(.+?)<`)
 }
 
 func (t *Topic) getAudio3() string {
-	var (
-		reAudio = regexp.MustCompile(`<span style="font-weight: bold">Аудио\s?.?3.?:\s*</span>(.+?)<`)
-		audio   string
-	)
-	if reAudio.Match(t.Body) {
-		audio = string(reAudio.FindSubmatch(t.Body)[1])
-		audio = cleanStr(audio)
-	}
-	return audio
+	return findStr(t.Body, `<span style="font-weight: bold">Аудио\s?.?3.?:\s*</span>(.+?)<`)
 }

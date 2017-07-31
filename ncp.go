@@ -111,10 +111,10 @@ type Film struct {
 }
 
 // Init nnmc with login password
-func Init(login string, password string, baseAddress string, proxyURL string, debug bool) (*NC, error) {
+func Init(login string, pass string, address string, proxyURL string, debug bool) (*NC, error) {
 	n := new(NC)
 	n.debugNet = debug
-	n.baseAddress = baseAddress
+	n.baseAddress = address
 	n.client = http.Client{
 		Timeout: time.Duration(10) * time.Second,
 	}
@@ -134,7 +134,7 @@ func Init(login string, password string, baseAddress string, proxyURL string, de
 	err := load("acc.gb", cooks)
 	if err == nil {
 		var body []byte
-		u, _ := url.Parse(baseAddress + "/forum/")
+		u, _ := url.Parse(address + "/forum/")
 		n.client.Jar.SetCookies(u, *cooks)
 		body, err = getHTML("http://nnmclub.to/forum/search.php", n)
 		if err == nil {
@@ -145,10 +145,10 @@ func Init(login string, password string, baseAddress string, proxyURL string, de
 	}
 	if err != nil {
 		fmt.Println(err)
-		urlPost := baseAddress + "/forum/login.php"
+		urlPost := address + "/forum/login.php"
 		form := url.Values{}
 		form.Set("username", login)
-		form.Add("password", password)
+		form.Add("password", pass)
 		form.Add("redirect", "")
 		form.Add("login", "âõîä")
 		req, _ := http.NewRequest("POST", urlPost, bytes.NewBufferString(form.Encode()))
@@ -158,7 +158,7 @@ func Init(login string, password string, baseAddress string, proxyURL string, de
 		if err != nil {
 			return nil, err
 		}
-		u, _ := url.Parse(baseAddress + "/forum/")
+		u, _ := url.Parse(address + "/forum/")
 		err = save("acc.gb", n.client.Jar.Cookies(u))
 	}
 	return n, err
@@ -198,25 +198,31 @@ func getHTML(href string, n *NC) ([]byte, error) {
 
 	if n.debugNet {
 		if href == n.baseAddress+"/forum/search.php" {
-			ioutil.WriteFile("search.html", doc, 0600)
+			err = ioutil.WriteFile("search.html", doc, 0600)
+			if err != nil {
+				return nil, err
+			}
 		}
 		if href == n.baseAddress+"/forum/login.php" {
-			ioutil.WriteFile("login.html", doc, 0600)
+			err = ioutil.WriteFile("login.html", doc, 0600)
+			if err != nil {
+				return nil, err
+			}
 		}
 		q := u.Query()
 		t := q.Get("t")
 		f := q.Get("f")
 		if t != "" {
-			ioutil.WriteFile(t+".html", doc, 0600)
+			err = ioutil.WriteFile(t+".html", doc, 0600)
 		} else {
 			if f != "" {
-				ioutil.WriteFile(f+".html", doc, 0600)
+				err = ioutil.WriteFile(f+".html", doc, 0600)
 			} else {
-				ioutil.WriteFile(u.Path+".html", doc, 0600)
+				err = ioutil.WriteFile(u.Path+".html", doc, 0600)
 			}
 		}
 	}
-	return doc, nil
+	return doc, err
 }
 
 // ParseForumTree get topics from forumTree
@@ -393,9 +399,9 @@ func save(path string, object interface{}) error {
 	file, err := os.Create(path)
 	if err == nil {
 		encoder := gob.NewEncoder(file)
-		encoder.Encode(object)
+		err = encoder.Encode(object)
 	}
-	file.Close()
+	_ = file.Close()
 	return err
 }
 
@@ -409,7 +415,7 @@ func load(path string, object interface{}) error {
 		decoder := gob.NewDecoder(file)
 		err = decoder.Decode(object)
 	}
-	file.Close()
+	_ = file.Close()
 	return err
 }
 
@@ -422,4 +428,46 @@ func existsFile(file string) bool {
 		return false
 	}
 	return true
+}
+
+func findInt(b []byte, reg string) int {
+	var (
+		ret int
+		re  = regexp.MustCompile(reg)
+	)
+	if re.Match(b) {
+		s := re.FindSubmatch(b)
+		ret, _ = strconv.Atoi(string(s[1]))
+	}
+	return ret
+}
+
+func findArrayOfStr(b []byte, reg string) []string {
+	var (
+		ret []string
+		re  = regexp.MustCompile(reg)
+	)
+	if re.Match(b) {
+		str := string(re.FindSubmatch(b)[1])
+		str = cleanStr(str)
+		str = strings.Trim(str, ".")
+		ret = stringToStruct(str)
+	}
+	return ret
+}
+
+func findStr(b []byte, reg string) string {
+	return cleanStr(findStrNoClean(b, reg))
+}
+
+func findStrNoClean(b []byte, reg string) string {
+	var (
+		ret string
+		re  = regexp.MustCompile(reg)
+	)
+	if re.Match(b) {
+		ret = string(re.FindSubmatch(b)[1])
+		ret = cleanStr(ret)
+	}
+	return ret
 }
