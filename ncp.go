@@ -130,13 +130,13 @@ func Init(login string, pass string, address string, proxyURL string, debug bool
 	cookieJar, _ := cookiejar.New(nil)
 	n.client.Jar = cookieJar
 
-	var cooks = new([]*http.Cookie)
-	err := load("acc.gb", cooks)
+	var cookie = new([]*http.Cookie)
+	err := load("acc.gb", cookie)
 	if err == nil {
 		var body []byte
 		u, _ := url.Parse(address + "/forum/")
-		n.client.Jar.SetCookies(u, *cooks)
-		body, err = getHTML("http://nnmclub.to/forum/search.php", n)
+		n.client.Jar.SetCookies(u, *cookie)
+		body, err = getHTML(address+"/forum/search.php", n)
 		if err == nil {
 			if !bytes.ContainsAny(body, login) {
 				err = fmt.Errorf("Wrong cookies")
