@@ -131,7 +131,7 @@ func Init(login string, pass string, address string, proxyURL string, debug bool
 	n.client.Jar = cookieJar
 
 	var cookie = new([]*http.Cookie)
-	err := load("acc.gb", cookie)
+	err := load(cookie)
 	if err == nil {
 		var body []byte
 		u, _ := url.Parse(address + "/forum/")
@@ -159,7 +159,7 @@ func Init(login string, pass string, address string, proxyURL string, debug bool
 			return nil, err
 		}
 		u, _ := url.Parse(address + "/forum/")
-		err = save("acc.gb", n.client.Jar.Cookies(u))
+		err = save(n.client.Jar.Cookies(u))
 	}
 	return n, err
 }
@@ -229,7 +229,9 @@ func getHTML(href string, n *NC) ([]byte, error) {
 func (n *NC) ParseForumTree(href string) ([]Topic, error) {
 	var (
 		topics []Topic
-		reTree = regexp.MustCompile(`<a href="viewtopic.php\?t=(\d+).*?"class="topictitle">(.+?)\s\((\d{4})\)\s(.+?)</a>`)
+		reTree = regexp.MustCompile(
+			`<a href="viewtopic.php\?t=(\d+).*?"class="topictitle">(.+?)\s\((\d{4})\)\s(.+?)</a>`,
+		)
 		// reAttrib = regexp.MustCompile(`\"Seeders\"><b>(\d*?)<.+?\"Leechers\"><b>(\d*?)<.+?<a href="(.+?)".+?>(.+?)</a`)
 	)
 	body, err := getHTML(n.baseAddress+href, n)
@@ -395,8 +397,8 @@ func stringToStruct(in string) []string {
 }
 
 // Encode via Gob to file
-func save(path string, object interface{}) error {
-	file, err := os.Create(path)
+func save(object interface{}) error {
+	file, err := os.Create("acc.gb")
 	if err == nil {
 		encoder := gob.NewEncoder(file)
 		err = encoder.Encode(object)
@@ -406,11 +408,11 @@ func save(path string, object interface{}) error {
 }
 
 // Decode Gob file
-func load(path string, object interface{}) error {
-	if !existsFile(path) {
-		return fmt.Errorf("File not exist")
+func load(object interface{}) error {
+	if !existsFile("acc.gb") {
+		return fmt.Errorf("File acc.gb not exist")
 	}
-	file, err := os.Open(path)
+	file, err := os.Open("acc.gb")
 	if err == nil {
 		decoder := gob.NewDecoder(file)
 		err = decoder.Decode(object)
