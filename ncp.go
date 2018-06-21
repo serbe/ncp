@@ -111,7 +111,7 @@ type Film struct {
 }
 
 // Init nnmc with login password
-func Init(login string, pass string, address string, proxyURL string, debug bool) (*NC, error) {
+func Init(login, pass, address, proxyURL string, debug bool) (*NC, error) {
 	n := new(NC)
 	n.debugNet = debug
 	n.baseAddress = address
@@ -151,7 +151,7 @@ func Init(login string, pass string, address string, proxyURL string, debug bool
 		form.Add("password", pass)
 		form.Add("redirect", "")
 		form.Add("login", "âõîä")
-		req, _ := http.NewRequest("POST", urlPost, bytes.NewBufferString(form.Encode()))
+		req, _ := http.NewRequest(http.MethodPost, urlPost, bytes.NewBufferString(form.Encode()))
 		req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
 		req.Header.Add("Content-Length", strconv.Itoa(len(form.Encode())))
 		_, err = n.client.Do(req)
@@ -319,7 +319,7 @@ func (n *NC) ParseTopic(topic Topic) (Film, error) {
 	return film, nil
 }
 
-func replaceAll(body []byte, from string, to string) []byte {
+func replaceAll(body []byte, from, to string) []byte {
 	var reStr = regexp.MustCompile(from)
 	if !reStr.Match(body) {
 		return body

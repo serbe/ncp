@@ -76,20 +76,17 @@ func getResolution(str string) string {
 	return resolution
 }
 
-func (t *Topic) getCountry() ([]string, string) {
-	var (
-		rawCountry = findStr(t.Body, `<span style="font-weight: bold">(?:Производство|Страна):\s*</span>(.+?)<`)
-		country    []string
-	)
+func (t *Topic) getCountry() (countryName []string, rawCountry string) {
+	rawCountry = findStr(t.Body, `<span style="font-weight: bold">(?:Производство|Страна):\s*</span>(.+?)<`)
 	lowerRawCountry := strings.ToLower(rawCountry)
 	for _, item := range counriesList {
 		i := strings.Index(lowerRawCountry, strings.ToLower(item))
 		if i != -1 && item != "" {
-			country = append(country, item)
+			countryName = append(countryName, item)
 			lowerRawCountry = lowerRawCountry[:i] + lowerRawCountry[i+len(item):]
 		}
 	}
-	return country, rawCountry
+	return
 }
 
 func (t *Topic) getGenre() []string {
